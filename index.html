@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>सूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f5f7fa;}
+  input,select,button{margin:6px 0;padding:8px;border:1px solid #ccc;border-radius:6px;}
+  button{background:#007bff;color:#fff;cursor:pointer;}
+  button:hover{background:#0056b3;}
+  #result{background:#fff;border-radius:10px;padding:20px;margin-top:20px;
+          box-shadow:0 0 10px rgba(0,0,0,0.1);}
+  b{color:#007bff;}
+</style>
+<style>
+  /* Initially hide the div */
+  #dwivediJi {
+    display: none;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>सूर्यसिद्धान्तीय पञ्चाङ्गम् </h1>
+
+<label></label><br>
+<input type="file" id="excelFile" accept=".xlsx,.xls" /><br>
+
+<select id="fileLink">
+  <option value="">स्थान चुनें</option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/oid686zwco9djewl2r476/.xlsx?rlkey=n0qnnoei8dtqmvw4ebbxs8rip&st=kqv17s3q">
+    काशी
+  </option>
+</select><br><br>
+
+<button onclick="loadFile()">पुष्टि करें</button><br><br>
+
+<div id="dateSection" style="display:none;">
+  <label>आङ्ग्ल दिनाङ्क चुनें</label><br>
+  <input type="date" id="datePicker" /><br><br>
+  <button onclick="searchData()">पञ्चाङ्ग</button>
+</div>
+
+<h3>Result:</h3>
+<div id="result"></div>
+
+<script>
+let workbookData = null;
+
+// Convert Excel serial or date-like string → dd/mm/yyyy
+function normalizeDate(v){
+  if(!v) return "";
+  if(!isNaN(v)){
+    const base=new Date(Date.UTC(1899,11,30));
+    base.setDate(base.getDate()+Number(v));
+    return base.toLocaleDateString("en-GB");
+  }
+  const d=new Date(v);
+  if(!isNaN(d)) return d.toLocaleDateString("en-GB");
+  return v.toString().trim();
+}
+
+// Convert Excel decimal → HH:MM:SS (supports >24 hrs)
+function excelTimeToHMS(value){
+  if(isNaN(value)) return value;
+  const totalSec=Math.round(value*24*3600);
+  const h=Math.floor(totalSec/3600);
+  const m=Math.floor((totalSec%3600)/60);
+  const s=totalSec%60;
+  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
+}
+
+// Load Excel file
+async function loadFile(){
+  const file=document.getElementById("excelFile").files[0];
+  const link=document.getElementById("fileLink").value.trim();
+  const resDiv=document.getElementById("result");
+  resDiv.innerHTML="⏳ Loading Excel...";
+
+  try{
+    let buffer;
+    if(file){
+      buffer=await file.arrayBuffer();
+    }else if(link){
+      const resp=await fetch(link);
+      if(!resp.ok) throw new Error("Cannot load file");
+      buffer=await resp.arrayBuffer();
+    }else{
+      resDiv.innerHTML="⚠️ Please select a file or link first.";
+      return;
+    }
+
+    const wb=XLSX.read(new Uint8Array(buffer),{type:"array"});
+    const sh=wb.Sheets[wb.SheetNames[0]];
+    workbookData=XLSX.utils.sheet_to_json(sh,{header:1,raw:true,defval:""});
+    document.getElementById("dateSection").style.display="block";
+    resDiv.innerHTML="✅ File loaded. Use the calendar to choose a date.";
+  }catch(err){
+    console.error(err);
+    resDiv.innerHTML="❌ Error loading Excel file. Check sharing link or format.";
+  }
+}
+
+// Search data for selected date
+function searchData(){
+  if(!workbookData){document.getElementById("result").innerHTML="⚠️ Load a file first.";return;}
+  const picker=document.getElementById("datePicker");
+  if(!picker.value){document.getElementById("result").innerHTML="⚠️ Please select a date.";return;}
+  const selectedDate=new Date(picker.value).toLocaleDateString("en-GB");
+  const headers=workbookData[0];
+  const row=workbookData.find((r,i)=>i>0 && normalizeDate(r[0])===selectedDate);
+  const resDiv=document.getElementById("result");
+
+  if(!row){resDiv.innerHTML="❌ No data found for "+selectedDate;return;}
+
+  let out=`<b>Date:</b> ${selectedDate}<br><br>`;
+  for(let i=1;i<headers.length;i++){
+    const name=headers[i];
+    let val=row[i];
+
+    if(typeof val==="string" && /^\d{2,}:\d{2}(:\d{2})?$/.test(val.trim())){
+      // Already formatted time
+    }else if(!isNaN(val)&&val!==""){
+      const num=parseFloat(val);
+      if(num>=0 && num<2) val=excelTimeToHMS(num);
+    }
+
+    const varName=name.replace(/\s+/g,"_").replace(/[^a-zA-Z0-9_]/g,"");
+    window[varName]=val;
+    out+=`<b>${name}:</b> <span id="${varName}">${val}</span><br>`;
+  }
+  resDiv.innerHTML=out;
+}
+</script>
+<script>
+  // Get elements
+  const button = document.getElementById("showBtn");
+  const div = document.getElementById("dwivediJi");
+
+  // When the button is clicked → show the div
+  button.addEventListener("click", () => {
+    div.style.display = "block"; // or "flex" if using flexbox
+  });
+  function show() {
+    document.getElementById("dwivediJi").style.display = "block"
+  }
+</script>
+
+<button id="showBtn" onclick="show()"></button>
+
+
+<div id="dwivediJi">
+<p>॥ॐ श्रीगणेशाय नम:॥ </p>
+<p></p>
+<p>॥श्रीसूर्यसिद्धान्तीय 🌞 काशीस्थ पञ्चाङ्ग॥</p>
+<p></p>
+<p>* विक्रम सम्वत - २०८२ "सिद्धार्थ नामक संवत्सर"</p>
+<p>* शक सम्वत - १९४७</p>
+<p></p>
+<p>* ऋतु    - शरद </p>
+<p>        </p>
+<p>* मास व पक्ष – कार्तिकशुक्लपक्ष </p>
+<p></p>
+<p>वार       - रविवार    </p>
+<p></p>
+<p>तिथि    - द्वादशी (रात्रि ००:५६ बजे तक) </p>
+<p>नक्षत्र    - पूर्वाभाद्रपद (१३:३५ बजे तक)  </p>
+<p>- (चन्द्रमा कुम्भ राशि में प्रातः ०७:४६ बजे तक तदुपरान्त मीन राशि में)  </p>
+<p> </p>
+<p>करण १    - बव (१३:४३ बजे तक)</p>
+<p>करण २    - बालव (रात्रि ००:५६ बजे तक) </p>
+<p>करण ३    - कौलव (सूर्योदयपर्यन्त)</p>
+<p></p>
+<p>योग      - व्याघात (रात्रि २१:०१ बजे तक) </p>
+<p>        </p>
+<p>* सूर्योदय    - ०६:०८ बजे </p>
+<p>* सूर्यास्त    - १७:१३ बजे </p>
+<p></p>
+<p>* दिशाशूल     - पश्चिम</p>
+<p></p>
+<p>ख्रिष्टीय वर्षानुसार दिनांक ०२ नवम्बर २०२५ ई०</p>
+<p></p>
+<p>॥तन्मेमनः शिवसङ्कल्पमस्तु॥</p>
+<p>***********</p>
+<p>(कृपया समय २४ घण्टे के प्रारूप में पढ़ें, पञ्चाङ्ग में कालगणना सूर्योदय के पश्चात होती है।)</p>
+</div>
+
+</body>
+</html>
