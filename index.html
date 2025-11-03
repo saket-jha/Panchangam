@@ -5,7 +5,7 @@
 <title>सूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  body{font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f5f7fa;}
+  body{font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f5f7fa;align-content: center;font-weight: bolder;}
   input,select,button{margin:6px 0;padding:8px;border:1px solid #ccc;border-radius:6px;}
   button{background:#007bff;color:#fff;cursor:pointer;}
   button:hover{background:#0056b3;}
@@ -81,7 +81,7 @@ async function loadFile(){
   const file=document.getElementById("excelFile").files[0];
   const link=document.getElementById("fileLink").value.trim();
   const resDiv=document.getElementById("result");
-  resDiv.innerHTML="⏳ Loading Excel...";
+  resDiv.innerHTML="⏳ गणना हो रही है.....";
 
   try{
     let buffer;
@@ -92,7 +92,7 @@ async function loadFile(){
       if(!resp.ok) throw new Error("Cannot load file");
       buffer=await resp.arrayBuffer();
     }else{
-      resDiv.innerHTML="⚠️ Please select a file or link first.";
+      resDiv.innerHTML="⚠️ कृपया पहले स्थान चुनें";
       return;
     }
 
@@ -100,10 +100,10 @@ async function loadFile(){
     const sh=wb.Sheets[wb.SheetNames[0]];
     workbookData=XLSX.utils.sheet_to_json(sh,{header:1,raw:true,defval:""});
     document.getElementById("dateSection").style.display="block";
-    resDiv.innerHTML="✅ File loaded. Use the calendar to choose a date.";
+    resDiv.innerHTML="✅ कृपया आङ्ग्ल दिनाङ्क चुनें";
   }catch(err){
     console.error(err);
-    resDiv.innerHTML="❌ Error loading Excel file. Check sharing link or format.";
+    resDiv.innerHTML="❌ गणना करने में त्रुटि हो रही है";
   }
 }
 
@@ -117,7 +117,7 @@ function searchData(){
   const row=workbookData.find((r,i)=>i>0 && normalizeDate(r[0])===selectedDate);
   const resDiv=document.getElementById("result");
 
-  if(!row){resDiv.innerHTML="❌ No data found for "+selectedDate;return;}
+  if(!row){resDiv.innerHTML="❌ दिनाङ्क "+selectedDate+"उपलब्ध नहीं है";return;}
 
   let out=`<b>Date:</b> ${selectedDate}<br><br>`;
   for(let i=1;i<headers.length;i++){
@@ -151,9 +151,9 @@ function searchData(){
     document.getElementById("dwivediJi").style.display = "block"
   }
 </script>
-
+<!--
 <button id="showBtn" onclick="show()"></button>
-
+-->
 
 <div id="dwivediJi">
 <p>॥ॐ श्रीगणेशाय नम:॥ </p>
