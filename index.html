@@ -30,9 +30,9 @@
 <h1>सूर्यसिद्धान्तीय पञ्चाङ्गम् </h1>
 
 <label></label><br>
-<input type="file" id="excelFile" accept=".xlsx,.xls" /><br>
+<input type="file" id="excelFile" style="font-size:xx-small; display: none;" accept=".xlsx,.xls" /><br>
 
-<select id="fileLink">
+<select id="fileLink" style="font-size: larger;">
   <option value="">स्थान चुनें</option>
   <option value="https://dl.dropboxusercontent.com/scl/fi/oid686zwco9djewl2r476/.xlsx?rlkey=n0qnnoei8dtqmvw4ebbxs8rip&st=kqv17s3q">
     काशी
@@ -42,12 +42,12 @@
   </option>
 </select><br><br>
 
-<button onclick="loadFile()">पुष्टि करें</button><br><br>
+<button style="font-size: larger;" onclick="loadFile()">पुष्टि करें</button><br><br>
 
 <div id="dateSection" style="display:none;">
-  <label>आङ्ग्ल दिनाङ्क चुनें</label><br>
-  <input type="date" id="datePicker" /><br><br>
-  <button onclick="searchData()">पञ्चाङ्ग</button>
+  <label style="font-size: larger;">आङ्ग्ल दिनाङ्क चुनें</label><br>
+  <input type="date" style="font-size: larger;" id="datePicker" /><br><br>
+  <button onclick="searchData()" style="font-size: larger;">पञ्चाङ्ग</button>
 </div>
 
 <h3>Result:</h3>
