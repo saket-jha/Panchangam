@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<title>Excel Data Lookup (Dropbox, Devanagari Support)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  body{font-family:'Noto Sans Devanagari',Arial,sans-serif;background:#f7f9fc;padding:30px;}
+  h2{color:#0078d7;}
+  label{font-weight:bold;}
+  input,button{padding:8px;margin:6px 0;border-radius:6px;border:1px solid #ccc;}
+  button{background:#0078d7;color:white;border:none;cursor:pointer;}
+  button:hover{background:#005bb5;}
+  #result{background:#fff;padding:20px;margin-top:20px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.1);}
+  b{color:#0078d7;}
+</style>
+</head>
+<body>
+
+<h2>📘 एक्सेल डेटा देखें (Dropbox से)</h2>
+
+<label>Dropbox Excel फ़ाइल चुनें:</label><br>
+<select id="fileLink">
+  <option value="">-- फ़ाइल चुनें --</option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/oid686zwco9djewl2r476/.xlsx?rlkey=n0qnnoei8dtqmvw4ebbxs8rip&st=kqv17s3q">
+    मुख्य डेटा फ़ाइल
+  </option>
+</select><br><br>
+
+<button onclick="loadFile()">फ़ाइल लोड करें</button><br><br>
+
+<div id="dateSection" style="display:none;">
+  <label>दिनांक चुनें:</label><br>
+  <input type="date" id="datePicker"><br><br>
+  <button onclick="searchData()">डेटा खोजें</button>
+</div>
+
+<h3>परिणाम:</h3>
+<div id="result"></div>
+
+<div id="govindji">
+<p>॥ॐ श्रीगणेशाय नम:॥ </p>
+<p></p>
+<p>॥श्रीसूर्यसिद्धान्तीय 🌞 काशीस्थ पञ्चाङ्ग॥</p>
+<p></p>
+<p>* विक्रम सम्वत - २०८२ "सिद्धार्थ नामक संवत्सर"</p>
+<p>* शक सम्वत - १९४७</p>
+<p></p>
+<p>* ऋतु    - शरद </p>
+<p>        </p>
+<p>* मास व पक्ष – <span id="maas"></span>&nbsp<span id="paksha"></span> </p>
+<p></p>
+<p>वार       - <span id="din"></span>    </p>
+<p></p>
+<p>तिथि    - <span id="tithi"></span>&nbsp(<span id="tithyant"></span> बजे तक) </p>
+<p>नक्षत्र    - <span id="nakshatra"></span> &nbsp(<span id="nakshatraant"></span> बजे तक)  </p>
+<p>- (चन्द्रमा <span id="rashi1"></span>&nbsp राशि में &nbsp <span id="rashyant"></span> बजे तक तदुपरान्त <span id="rashi2"></span><span id="rashi2Line"></span> राशि में)  </p>
+<p> </p>
+<p>करण १    - <span id="karan"></span> &nbsp(<span id="karanant1"></span> &nbspबजे तक)</p>
+<p>करण २    - <span id="karan2"></span>&nbsp (<span id="karanant2"></span>&nbsp बजे तक) </p>
+<p>करण ३    - <span id="karan3"></span>&nbsp (सूर्योदयपर्यन्त)</p>
+<p></p>
+<p>योग      - <span id="yog"></span>&nbsp (<span id="yogant"></span>&nbsp बजे तक) </p>
+<p>        </p>
+<p>* सूर्योदय    - <span id="suryodaya"></span>&nbsp बजे </p>
+<p>* सूर्यास्त    - <span id="suryast"></span>&nbsp बजे </p>
+<p></p>
+<p>* दिशाशूल     - <span id="dikshool"></span>&nbsp</p>
+<p></p>
+<p>ख्रिष्टीय वर्षानुसार दिनांक <span id="dinaank"></span>&nbsp ई०</p>
+<p></p>
+<p>॥तन्मेमनः शिवसङ्कल्पमस्तु॥</p>
+<p>***********</p>
+<p>(कृपया समय २४ घण्टे के प्रारूप में पढ़ें, पञ्चाङ्ग में कालगणना सूर्योदय के पश्चात होती है।)</p>
+</div>
+
+<script>
+let workbookData = null;
+
+// Excel serial → dd/mm/yyyy
+function normalizeDate(v){
+  if(!v) return "";
+  if(!isNaN(v)){
+    const base=new Date(Date.UTC(1899,11,30));
+    base.setDate(base.getDate()+Number(v));
+    return base.toLocaleDateString("en-GB");
+  }
+  const d=new Date(v);
+  if(!isNaN(d)) return d.toLocaleDateString("en-GB");
+  return v.toString().trim();
+}
+
+// Excel decimal → HH:MM:SS
+function excelTimeToHMS(value){
+  if(isNaN(value)) return value;
+  const totalSec=Math.round(value*24*3600);
+  const h=Math.floor(totalSec/3600);
+  const m=Math.floor((totalSec%3600)/60);
+  const s=totalSec%60;
+  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
+}
+
+
+// Load Excel from Dropbox
+async function loadFile(){
+  const link=document.getElementById("fileLink").value.trim();
+  const resDiv=document.getElementById("result");
+  if(!link){resDiv.innerHTML="⚠️ कृपया पहले फ़ाइल चुनें।";return;}
+
+  resDiv.innerHTML="⏳ Excel फ़ाइल लोड हो रही है...";
+  try{
+    const resp=await fetch(link);
+    if(!resp.ok) throw new Error("Unable to load file");
+    const buffer=await resp.arrayBuffer();
+    const wb=XLSX.read(new Uint8Array(buffer),{type:"array"});
+    const sh=wb.Sheets[wb.SheetNames[0]];
+    workbookData=XLSX.utils.sheet_to_json(sh,{header:1,raw:true,defval:""});
+    document.getElementById("dateSection").style.display="block";
+    resDiv.innerHTML="✅ फ़ाइल सफलतापूर्वक लोड हो गई। अब दिनांक चुनें।";
+  }catch(err){
+    console.error(err);
+    resDiv.innerHTML="❌ Excel फ़ाइल लोड नहीं हो सकी। शेयरिंग सेटिंग जाँचें।";
+  }
+}
+
+
+
+function setNakshatraAndRashi(col16) {
+  const nakshatraMap = {
+    "1-ashvini": "अश्विनी",
+    "2-bharani": "भरणी",
+    "3-krittika": "कृत्तिका",
+    "4-rohini": "रोहिणी",
+    "5-mrigshira": "मृगशिरा",
+    "6-ardra": "आर्द्रा",
+    "7-punarvasu": "पुनर्वसु",
+    "8-pushya": "पुष्य",
+    "9-ashlesha": "अश्लेषा",
+    "10-magha": "मघा",
+    "11-1phalguni": "पूर्वाफाल्गुनी",
+    "12-2phalguni": "उत्तराफाल्गुनी",
+    "13-hasta": "हस्त",
+    "14-chitra": "चित्रा",
+    "15-swati": "स्वाती",
+    "16-vishakha": "विशाखा",
+    "17-anuradha": "अनुराधा",
+    "18-jyestha": "ज्येष्ठा",
+    "19-moola": "मूल",
+    "20-1ashadha": "पूर्वाषाढा",
+    "21-2ashadha": "उत्तराषाढा",
+    "22-shravana": "श्रवण",
+    "23-dhanishtha": "धनिष्ठा",
+    "24-shatbhish": "शतभिषा",
+    "25-1bhadrpad": "पूर्वभाद्रपद",
+    "26-2bhadrpad": "उत्तरभाद्रपद",
+    "27-revati": "रेवती"
+  };
+
+  const rashiMap = {
+    "1-ashvini": ["मेष"],
+    "2-bharani": ["मेष"],
+    "3-krittika": ["मेष", "वृषभ"],
+    "4-rohini": ["वृषभ"],
+    "5-mrigshira": ["वृषभ", "मिथुन"],
+    "6-ardra": ["मिथुन"],
+    "7-punarvasu": ["मिथुन", "कर्क"],
+    "8-pushya": ["कर्क"],
+    "9-ashlesha": ["कर्क"],
+    "10-magha": ["सिंह"],
+    "11-1phalguni": ["सिंह"],
+    "12-2phalguni": ["कन्या"],
+    "13-hasta": ["कन्या"],
+    "14-chitra": ["कन्या", "तुला"],
+    "15-swati": ["तुला"],
+    "16-vishakha": ["तुला", "वृश्चिक"],
+    "17-anuradha": ["वृश्चिक"],
+    "18-jyestha": ["वृश्चिक"],
+    "19-moola": ["धनु"],
+    "20-1ashadha": ["धनु"],
+    "21-2ashadha": ["मकर"],
+    "22-shravana": ["मकर"],
+    "23-dhanishtha": ["मकर", "कुम्भ"],
+    "24-shatbhish": ["कुम्भ"],
+    "25-1bhadrpad": ["कुम्भ", "मीन"],
+    "26-2bhadrpad": ["मीन"],
+    "27-revati": ["मीन"]
+  };
+
+  const key = String(col16 || "").trim().toLowerCase().replace(/\s+/g, "").replace(/[^0-9a-z\-]/g, "");
+  const nakshatra = nakshatraMap[key] || "—";
+  const rashis = rashiMap[key] || ["—"];
+
+  // Update Nakshatra and Rashi1
+  document.getElementById("nakshatra").innerText = nakshatra;
+  document.getElementById("rashi1").innerText = rashis[0] || "—";
+
+  // Select elements for optional Rashi2 line (e.g. “तदुपरान्त … राशि में”)
+  const rashi2Span = document.getElementById("rashi2");
+  const rashi2Line = document.getElementById("rashi2line");
+
+  if (rashis.length > 1) {
+    // Show both राशियाँ
+    document.getElementById("rashi2").innerText = rashis[1];
+    if (rashi2Line) rashi2Line.style.display = "inline";
+  } else {
+    // Hide only “तदुपरान्त … राशि में”
+    document.getElementById("rashi2").innerText = "";
+    if (rashi2Line) rashi2Line.style.display = "none";
+  }
+}
+
+// Search data by selected date
+function searchData(){
+  if(!workbookData){document.getElementById("result").innerHTML="⚠️ पहले फ़ाइल लोड करें।";return;}
+  const picker=document.getElementById("datePicker");
+  if(!picker.value){document.getElementById("result").innerHTML="⚠️ दिनांक चुनें।";return;}
+
+  const selDate=new Date(picker.value).toLocaleDateString("en-GB");
+  const headers=workbookData[0];
+  const row=workbookData.find((r,i)=>i>0 && normalizeDate(r[0])===selDate);
+  const resDiv=document.getElementById("result");
+
+  if(!row){resDiv.innerHTML="❌ "+selDate+" के लिए डेटा नहीं मिला।";return;}
+
+  let out=`<b>दिनांक:</b> ${selDate}<br><br>`;
+  for(let i=1;i<headers.length;i++){
+    const title=headers[i];
+    let val=row[i];
+
+    if(typeof val==="string" && /^\d{2,}:\d{2}(:\d{2})?$/.test(val.trim())){
+      // already HH:MM(:SS)
+    }else if(!isNaN(val)&&val!==""){
+      const num=parseFloat(val);
+      if(num>=0 && num<2) val=excelTimeToHMS(num);
+    }
+
+    // Safe JS variable (col1, col2…)
+    const varName="col"+i;
+    window[varName]=val;
+
+    out+=`<b>${title}:</b> <span id="${varName}">${val}</span><br>`;
+  }
+  resDiv.innerHTML=out; 
+
+
+
+
+    document.getElementById("dinaank").innerText = selDate;
+    document.getElementById("maas").innerText = col1;
+    document.getElementById("din").innerText = col2;
+    document.getElementById("tithi").innerText = col3;
+    document.getElementById("tithyant").innerText = col4;
+    document.getElementById("yog").innerText = col5;
+    document.getElementById("yogant").innerText = col6;
+    document.getElementById("karan").innerText = col7;
+    document.getElementById("karanant1").innerText = col8;
+ //   document.getElementById("karanant2").innerText = col9;
+    document.getElementById("suryodaya").innerText = col10;
+    document.getElementById("suryast").innerText = col11;
+ //   document.getElementById("spashtSurya").innerText = col12;
+    document.getElementById("rashyant").innerText = col13;
+ //   document.getElementById("spashtChandra").innerText = col14;
+    document.getElementById("nakshatraant").innerText = col15;
+//  document.getElementById("nakshatra").innerText = col16;
+
+
+// वार परिवर्तन
+  if (col2 === "Sun") {
+      document.getElementById("din").innerText = "रविवार";
+        }
+  if (col2 === "Mon") {
+      document.getElementById("din").innerText = "सोमवार";
+        }
+  if (col2 === "Tue") {
+      document.getElementById("din").innerText = "मङ्गलवार";
+        }
+  if (col2 === "Wed") {
+      document.getElementById("din").innerText = "बुधवार";
+        }
+  if (col2 === "Thu") {
+      document.getElementById("din").innerText = "बृहस्पतिवार";
+        }
+  if (col2 === "Fri") {
+      document.getElementById("din").innerText = "शुक्रवार";
+        }
+  if (col2 === "Sat") {
+      document.getElementById("din").innerText = "शनिवार";
+        }
+
+  //तिथि परिवर्तन
+  if (col3 == 1) {
+      document.getElementById("tithi").innerText = "प्रतिपदा";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 2) {
+      document.getElementById("tithi").innerText = "द्वितीया";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 3) {
+      document.getElementById("tithi").innerText = "तृतीया";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 4) {
+      document.getElementById("tithi").innerText = "चतुर्थी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 5) {
+      document.getElementById("tithi").innerText = "पञ्चमी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 6) {
+      document.getElementById("tithi").innerText = "षष्ठी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 7) {
+      document.getElementById("tithi").innerText = "सप्तमी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 8) {
+      document.getElementById("tithi").innerText = "अष्टमी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 9) {
+      document.getElementById("tithi").innerText = "नवमी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 10) {
+      document.getElementById("tithi").innerText = "दशमी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 11) {
+      document.getElementById("tithi").innerText = "एकादशी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 12) {
+      document.getElementById("tithi").innerText = "द्वादशी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 13) {
+      document.getElementById("tithi").innerText = "त्रयोदशी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 14) {
+      document.getElementById("tithi").innerText = "चतुर्दशी";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 15) {
+      document.getElementById("tithi").innerText = "पूर्णिमा";
+      document.getElementById("paksha").innerText = "शुक्लपक्ष";
+        }
+  if (col3 == 16) {
+      document.getElementById("tithi").innerText = "प्रतिपदा";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 17) {
+      document.getElementById("tithi").innerText = "द्वितीया";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 18) {
+      document.getElementById("tithi").innerText = "तृतीया";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 19) {
+      document.getElementById("tithi").innerText = "चतुर्थी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 20) {
+      document.getElementById("tithi").innerText = "पञ्चमी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 21) {
+      document.getElementById("tithi").innerText = "षष्ठी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 22) {
+      document.getElementById("tithi").innerText = "सप्तमी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 23) {
+      document.getElementById("tithi").innerText = "अष्टमी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 24) {
+      document.getElementById("tithi").innerText = "नवमी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 25) {
+      document.getElementById("tithi").innerText = "दशमी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 26) {
+      document.getElementById("tithi").innerText = "एकादशी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 27) {
+      document.getElementById("tithi").innerText = "द्वादशी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 28) {
+      document.getElementById("tithi").innerText = "त्रयोदशी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 29) {
+      document.getElementById("tithi").innerText = "चतुर्दशी";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+  if (col3 == 30) {
+      document.getElementById("tithi").innerText = "पूर्णिमा";
+      document.getElementById("paksha").innerText = "कृष्णपक्ष";
+        }
+
+
+  setNakshatraAndRashi(col16);
+
+
+
+
+
+  const devanagariDigits = ['०','१','२','३','४','५','६','७','८','९'];
+
+    // Function to replace all digits in a string
+    function convertToDevanagari(str) {
+      return str.replace(/\d/g, d => devanagariDigits[d]);
+    }
+
+    // Select the div
+    const govindjiDiv = document.getElementById("govindji");
+
+    // Recursively replace digits inside all text nodes
+    function replaceDigitsInElement(element) {
+      element.childNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          node.textContent = convertToDevanagari(node.textContent);
+        } else {
+          replaceDigitsInElement(node);
+        }
+      });
+    }
+
+    // Apply to the div
+    replaceDigitsInElement(govindjiDiv);
+
+
+  
+
+}
+    
+</script>
+</body>
+</html>

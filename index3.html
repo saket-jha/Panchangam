@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<title>Excel Data Lookup (Dropbox, Devanagari Support) — Nakshatra Only</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  body{font-family:'Noto Sans Devanagari',Arial,sans-serif;background:#f7f9fc;padding:24px;}
+  h2{color:#0a66c2}
+  label{font-weight:600}
+  input,select,button{padding:8px;margin:6px 0;border-radius:6px;border:1px solid #ccc}
+  button{background:#0a66c2;color:#fff;border:none;cursor:pointer}
+  button:hover{background:#094f9a}
+  #result{background:#fff;padding:16px;margin-top:14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+  p{margin:6px 0}
+  small.debug{color:#666}
+</style>
+</head>
+<body>
+<h2>📘 Excel Lookup (Dropbox) — Nakshatra Only</h2>
+
+<label>Dropbox Excel फ़ाइल चुनें:</label><br>
+<select id="fileLink">
+  <option value="">-- फ़ाइल चुनें --</option>
+  <!-- replace with your actual Dropbox link if needed -->
+  <option value="https://dl.dropboxusercontent.com/scl/fi/oid686zwco9djewl2r476/.xlsx?rlkey=n0qnnoei8dtqmvw4ebbxs8rip&st=kqv17s3q">
+    मुख्य डेटा फ़ाइल
+  </option>
+</select><br>
+<button onclick="loadFile()">फ़ाइल लोड करें</button>
+
+<div id="dateSection" style="display:none;margin-top:12px">
+  <label>दिनांक चुनें:</label><br>
+  <input type="date" id="datePicker" /> <button onclick="searchData()">डेटा खोजें</button>
+</div>
+
+<h3>परिणाम:</h3><div id="result"></div>
+
+<hr>
+
+<div id="govindji" style="background:#fff;padding:14px;border-radius:8px;">
+  <p>॥ॐ श्रीगणेशाय नम:॥</p>
+  <p>॥श्रीसूर्यसिद्धान्तीय 🌞 काशीस्थ पञ्चाङ्ग॥</p>
+  <p>* विक्रम सम्वत - २०८२ "सिद्धार्थ नामक संवत्सर"</p>
+  <p>* शक सम्वत - १९४७</p>
+  <p>* ऋतु - शरद</p>
+  <p>* मास व पक्ष – <span id="maas"></span>&nbsp;<span id="paksha"></span></p>
+  <p>वार - <span id="din"></span></p>
+  <p>तिथि - <span id="tithi"></span> (<span id="tithyant"></span> बजे तक)</p>
+  <p>नक्षत्र - <span id="nakshatra"></span> (<span id="nakshatraant"></span> बजे तक)</p>
+
+  <!-- Rashi spans remain in HTML but are NOT set by this script -->
+  <p>- (चन्द्रमा <span id="rashi1"></span>&nbsp;राशि में&nbsp;<span id="rashyant"></span> बजे तक 
+    <span id="rashi2line">तदुपरान्त <span id="rashi2"></span>&nbsp;राशि में</span>)</p>
+
+  <p>करण १ - <span id="karan"></span> (<span id="karanant1"></span> बजे तक)</p>
+  <p>करण २ - <span id="karan2"></span> (<span id="karanant2"></span> बजे तक)</p>
+  <p>करण ३ - <span id="karan3"></span> (सूर्योदयपर्यन्त)</p>
+
+  <p>योग - <span id="yog"></span> (<span id="yogant"></span> बजे तक)</p>
+  <p>* सूर्योदय - <span id="suryodaya"></span> बजे</p>
+  <p>* सूर्यास्त - <span id="suryast"></span> बजे</p>
+  <p>* दिशाशूल - <span id="dikshool"></span></p>
+  <p>ख्रिष्टीय वर्षानुसार दिनांक <span id="dinaank"></span> ई०</p>
+  <p>॥तन्मेमनः शिवसङ्कल्पमस्तु॥</p>
+</div>
+
+<script>
+/* ------------------- Helpers ------------------- */
+let workbookData = null;
+
+function normalizeDate(v){
+  if(v === undefined || v === null || v === "") return "";
+  if(!isNaN(v)){
+    const base=new Date(Date.UTC(1899,11,30));
+    base.setDate(base.getDate()+Number(v));
+    return base.toLocaleDateString("en-GB");
+  }
+  const d=new Date(v);
+  if(!isNaN(d)) return d.toLocaleDateString("en-GB");
+  return String(v).trim();
+}
+
+function excelTimeToHMS(value){
+  if(isNaN(value)) return value;
+  const totalSec=Math.round(value*24*3600);
+  const h=Math.floor(totalSec/3600);
+  const m=Math.floor((totalSec%3600)/60);
+  const s=totalSec%60;
+  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
+}
+
+
+
+/* ------------------- File loading and search ------------------- */
+async function loadFile(){
+  const link = document.getElementById("fileLink").value.trim();
+  const resDiv = document.getElementById("result");
+  if(!link){ resDiv.innerHTML = "⚠️ कृपया फ़ाइल चुनें"; return; }
+  resDiv.innerHTML = "⏳ फ़ाइल लोड हो रही है...";
+  try{
+    const resp = await fetch(link);
+    if(!resp.ok) throw new Error("fetch failed: " + resp.status);
+    const buf = await resp.arrayBuffer();
+    const wb = XLSX.read(new Uint8Array(buf), {type:"array"});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    workbookData = XLSX.utils.sheet_to_json(sheet, {header:1, raw:true, defval:""});
+    document.getElementById("dateSection").style.display = "block";
+    resDiv.innerHTML = "✅ फ़ाइल लोड हो गई। दिनांक चुनें।";
+  }catch(err){
+    console.error(err);
+    resDiv.innerHTML = "❌ फ़ाइल लोड नहीं हो सकी: " + (err.message || err);
+  }
+}
+
+function searchData(){
+  if(!workbookData){ document.getElementById("result").innerHTML="⚠️ पहले फ़ाइल लोड करें"; return; }
+  const picker = document.getElementById("datePicker");
+  if(!picker.value){ document.getElementById("result").innerHTML="⚠️ दिनांक चुनें"; return; }
+
+  const selDate = new Date(picker.value).toLocaleDateString("en-GB");
+  const headers = workbookData[0] || [];
+  const row = workbookData.find((r,i) => i>0 && normalizeDate(r[0]) === selDate);
+  const resDiv = document.getElementById("result");
+  if(!row){ resDiv.innerHTML = "❌ "+ selDate + " के लिए डेटा नहीं मिला"; return; }
+
+  let out = `<b>दिनांक:</b> ${selDate}<br><br>`;
+  for(let i=1;i<headers.length;i++){
+    const title = headers[i] || ("col"+i);
+    let val = row[i];
+    if(typeof val === "string" && /^\d{1,2}:\d{2}(:\d{2})?$/.test(val.trim())){}
+    else if(val !== "" && !isNaN(val)) {
+      const num = parseFloat(val);
+      if(num >= 0 && num < 2) val = excelTimeToHMS(num);
+    }
+    const varName = "col"+i;
+    window[varName] = val;
+    out += `<b>${title}:</b> <span id="${varName}">${val}</span><br>`;
+  }
+  resDiv.innerHTML = out;
+
+  // fill govindji spans
+  document.getElementById("dinaank").innerText = selDate;
+  document.getElementById("maas").innerText = window.col1 || "";
+  document.getElementById("din").innerText = window.col2 || "";
+  document.getElementById("tithi").innerText = window.col3 || "";
+  document.getElementById("tithyant").innerText = window.col4 || "";
+  document.getElementById("yog").innerText = window.col5 || "";
+  document.getElementById("yogant").innerText = window.col6 || "";
+  document.getElementById("karan").innerText = window.col7 || "";
+  document.getElementById("karanant1").innerText = window.col8 || "";
+ // document.getElementById("karan2").innerText = window.col9 || "";
+  document.getElementById("karanant2").innerText = window.col9 || "";
+ // document.getElementById("spashtSurya").innerText = window.col12 || "";
+  document.getElementById("suryodaya").innerText = window.col10 || "";
+  document.getElementById("suryast").innerText = window.col11 || "";
+  document.getElementById("rashyant").innerText = window.col13 || "";
+  document.getElementById("nakshatraant").innerText = window.col15 || "";
+
+  // day name mapping (if col2 has Sun/Mon etc.)
+  const dayMap = { Sun:"रविवार", Mon:"सोमवार", Tue:"मङ्गलवार", Wed:"बुधवार", Thu:"बृहस्पतिवार", Fri:"शुक्रवार", Sat:"शनिवार" };
+  if(window.col2 && dayMap[window.col2]) 
+  document.getElementById("din").innerText = dayMap[window.col2];
+
+// dishashool name mapping (if col2 has Sun/Mon etc.)
+  const dikshoolMap = { Sun:"पश्चिम", Mon:"पूरब", Tue:"उत्तर", Wed:"उत्तर", Thu:"दक्षिण", Fri:"पश्चिम", Sat:"पूरब" };
+  if(window.col2 && dikshoolMap[window.col2]) 
+  document.getElementById("dikshool").innerText = dikshoolMap[window.col2];
+
+
+  // nakshatra name mapping (if col2 has Sun/Mon etc.)
+  const nakshatraMap = { "1-Ashvini": "अश्विनी", "2-Bharani": "भरणी", "3-Krittikä": "कृत्तिका", "5-Mrigshirä": "रोहिणी", "6-Ärdrä": "मृगशिरा", "7-Punarvasu": "आर्द्रा", "8-Pušya": "पुनर्वसु", "9-Äshlešä": "पुष्य", "10-Maghä": "अश्लेषा", "11-1Phälguni": "मघा", "12-2Phälguni": "पूर्वाफाल्गुनी", "13-Hasta": "उत्तराफाल्गुनी", "14-Chiträ": "हस्त", "15-Sväti": "चित्रा", "15-Sväti": "स्वाती", "16-Vishäkhä": "विशाखा", "17-Anurädhä": "अनुराधा", "18-Jyešthä": "ज्येष्ठा", "19-Moola": "मुल", "20-1Äšädha": "पुर्वाषाढा", "21-2Äšädha": "उत्तरषाढा", "22-Shravana": "श्रवण", "23-Dhaništhä": "धनिष्ठा", "24-Shatbhiš": "शतभिषा", "25-1Bhädrpad": "पूर्वभाद्रपद", "26-2Bhädrpad": "उत्तरभाद्रपद", "27-Revati": "रेवती" };
+  if(window.col16 && nakshatraMap[window.col16]) 
+  document.getElementById("nakshatra").innerText = nakshatraMap[window.col16];
+
+  // yog name mapping (if col5 has 01:Viškambh etc.)
+  const yogMap = { "01:Viškambh": "विष्कुम्भ", "02:Preeti": "प्रीति", "03:Ayušmän": "आयुष्मान", "04:Saubhägy": "सौभाग्य", "05:Shobhan": "शोभन", "06:Atigand": "अतिगण्ड", "07:Sukarman": "सुकर्मा", "08:Dhriti": "धृति", "09:Shoola": "शूल", "10:Ganda": "गण्ड", "11:Vriddhi": "वृद्धि", "12:Dhruva": "ध्रुव", "13:Vyäghät": "व्याघात", "14:Haršan": "हर्षण", "15:Vajra": "वज्र", "16:Siddhi": "सिद्धि", "17:Vyatipät": "व्यतीपात", "18:Variyän": "वरीयान्", "19:Parigha": "परिघ", "20:Shiva": "शिव", "21:Siddha": "सिद्ध", "22:Sädhy": "साध्य", "23:Shubha": "शुभ", "24:Shukla": "शुक्ल", "25:Brahma": "ब्रह्म", "26:Indra": "इन्द्र", "27:Vædhrti": "वैधृति"};
+  if(window.col5 && yogMap[window.col5]) 
+  document.getElementById("yog").innerText = yogMap[window.col5];
+
+ // day name mapping (if col2 has Sun/Mon etc.)
+  const karanMap = { "Bava": "बव", "Bälav": "बालव", "Kaulav": "कौलव", "Taitil": "तैतिल", "Gara": "गर", "Vanij": "वणिज", "Višti": "विष्टि", "Shakun": "शकुनि", "Chatuš": "चतुष्पाद", "Näga": "नाग", "Kimstu": "किस्तुघ्न" };
+  if(window.col7 && karanMap[window.col7]) 
+  document.getElementById("karan").innerText = karanMap[window.col7];
+ // find next karan
+      const keys = Object.keys(karanMap);
+      const currentIndex = keys.indexOf(window.col7);
+      const nextIndex = (currentIndex + 1) % keys.length; // wraps to start if last
+      const nextKey = keys[nextIndex];
+      const nextIndex1 = (currentIndex + 2) % keys.length; // wraps to start if last
+      const nextKey1 = keys[nextIndex1];
+
+      document.getElementById("karan2").innerText = karanMap[nextKey];
+      document.getElementById("karan3").innerText = karanMap[nextKey1];
+    
+
+
+  // numeric tithi -> name mapping (if applicable)
+  if(!isNaN(window.col3) && window.col3 !== "") {
+    const t = Number(window.col3);
+    const tithiNames = {
+      1:"प्रतिपदा",2:"द्वितीया",3:"तृतीया",4:"चतुर्थी",5:"पञ्चमी",6:"षष्ठी",7:"सप्तमी",
+      8:"अष्टमी",9:"नवमी",10:"दशमी",11:"एकादशी",12:"द्वादशी",13:"त्रयोदशी",14:"चतुर्दशी",15:"पूर्णिमा",
+      16:"प्रतिपदा",17:"द्वितीया",18:"तृतीया",19:"चतुर्थी",20:"पञ्चमी",21:"षष्ठी",22:"सप्तमी",
+      23:"अष्टमी",24:"नवमी",25:"दशमी",26:"एकादशी",27:"द्वादशी",28:"त्रयोदशी",29:"चतुर्दशी",30:"पूर्णिमा"
+    };
+    document.getElementById("tithi").innerText = tithiNames[t] || window.col3;
+    document.getElementById("paksha").innerText = (t <= 15 ? "शुक्लपक्ष" : "कृष्णपक्ष");
+  }
+
+  // *** ONLY nakshatra mapping (no rashi mapping) ***
+ // setNakshatraOnly(window.col16);
+
+  // convert ASCII digits inside govindji to Devanagari (after DOM updated)
+  const devanagariDigits = ['०','१','२','३','४','५','६','७','८','९'];
+  function convertToDevanagari(str){ return String(str).replace(/\d/g, d => devanagariDigits[d]); }
+  function replaceDigits(node){
+    node.childNodes.forEach(n => {
+      if(n.nodeType === Node.TEXT_NODE){
+        n.textContent = convertToDevanagari(n.textContent);
+      } else {
+        replaceDigits(n);
+      }
+    });
+  }
+  replaceDigits(document.getElementById("govindji"));
+}
+
+
+</script>
+
+
+
+<!--
+
+
+/* ------------------- Nakshatra Map (only) ------------------- */
+/* keys are normalized forms; mapping provides Devanagari nakshatra name */
+const NAK_MAP = {
+  "1-ashvini":"अश्विनी","2-bharani":"भरणी","3-krittika":"कृत्तिका","4-rohini":"रोहिणी",
+  "5-mrigshira":"मृगशिरा","6-ardra":"आर्द्रा","7-punarvasu":"पुनर्वसु","8-pushya":"पुष्य",
+  "9-ashlesha":"अश्लेषा","10-magha":"मघा","11-1phalguni":"पूर्वाफाल्गुनी","12-2phalguni":"उत्तराफाल्गुनी",
+  "13-hasta":"हस्त","14-chitra":"चित्रा","15-Sväti":"स्वाती","16-vishakha":"विशाखा",
+  "17-anuradha":"अनुराधा","18-jyestha":"ज्येष्ठा","19-moola":"मूल","20-1ashadha":"पूर्वाषाढा",
+  "21-2ashadha":"उत्तराषाढा","22-shravana":"श्रवण","23-dhanishtha":"धनिष्ठा","24-shatbhish":"शतभिषा",
+  "25-1bhadrpad":"पूर्वभाद्रपद","26-2bhadrpad":"उत्तरभाद्रपद","27-revati":"रेवती"
+};
+
+/* Robust normalization for col16 values */
+function normalizeCol16(s){
+  if(s === undefined || s === null) return "";
+  s = String(s);
+  s = s.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  s = s.toLowerCase();
+  s = s.replace(/[\u2010-\u2015\u2212]/g, "-");
+  s = s.replace(/\s*-\s*/g, "-").replace(/\s+/g, "");
+  s = s.replace(/[^0-9a-z\-]/g,"");
+  s = s.replace(/-+/g,"-").replace(/^-|-$/g,"");
+  return s;
+}
+
+/* Find the nakshatra key — exact or name-only fallback */
+function findNakKey(raw){
+  const k = normalizeCol16(raw);
+  if(!k) return "";
+  if(NAK_MAP[k]) return k;
+  const nameOnly = k.replace(/^[0-9\-]+/,"");
+  if(NAK_MAP[nameOnly]) return nameOnly;
+  for(const candidate of Object.keys(NAK_MAP)){
+    if(candidate.endsWith("-" + nameOnly) || candidate === nameOnly) return candidate;
+  }
+  for(const candidate of Object.keys(NAK_MAP)){
+    if(nameOnly && candidate.includes(nameOnly)) return candidate;
+  }
+  return "";
+}
+
+/* Set only Nakshatra into DOM (no Rashi mapping) */
+function setNakshatraOnly(col16value){
+  const key = findNakKey(col16value);
+  console.log("DEBUG: col16 raw:", col16value, "→ key:", key);
+  const nak = key ? (NAK_MAP[key] || "—") : "—";
+  document.getElementById("nakshatra").innerText = nak;
+}
+
+
+-->
+</body>
+</html>
