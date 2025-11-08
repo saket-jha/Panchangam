@@ -5,7 +5,7 @@
 <title>सूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  body{font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f5f7fa;align-content: center;font-weight: bolder;}
+  body{margin-left: 25%; margin-right: 25%; text-align: center; font-size: larger; font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f5f7fa;align-content: center;font-weight: bolder;}
   input,select,button{margin:6px 0;padding:8px;border:1px solid #ccc;border-radius:6px;}
   button{background:#007bff;color:#fff;cursor:pointer;}
   button:hover{background:#0056b3;}
@@ -32,7 +32,7 @@
 <label></label><br>
 <input type="file" id="excelFile" style="font-size:xx-small; display: none;" accept=".xlsx,.xls" /><br>
 
-<select id="fileLink" style="font-size: larger; margin-left: 40%;">
+<select id="fileLink">
   <option value="">स्थान चुनें</option>
   <option value="https://dl.dropboxusercontent.com/scl/fi/sm2li2jedmf7wyhj8ttiq/Kashi.xlsx?rlkey=d3pzcjlrsd2pazsqf8byrbyd8&st=viv5sh1t">
     काशी
@@ -42,7 +42,7 @@
   </option>
 </select><br><br>
 
-<button style="font-size: larger; margin-left: 40%;" onclick="loadFile()">पुष्टि करें</button><br><br>
+<button onclick="loadFile()">पुष्टि करें</button><br><br>
 
 <div id="dateSection" style="display:none; text-align: center;">
   <label style="font-size: larger;">आङ्ग्ल दिनाङ्क चुनें</label><br>
