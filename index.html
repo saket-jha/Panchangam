@@ -131,8 +131,9 @@ function searchData(){
       // Already formatted time
     }else if(!isNaN(val)&&val!==""){
       const num=parseFloat(val);
-      if(num>=0 && num<2) val=excelTimeToHMS(num);
+      if(num>=0 && num<2 && i !== 3) val=excelTimeToHMS(num);
     }
+
 
     const varName=name.replace(/\s+/g,"_").replace(/[^a-zA-Z0-9_]/g,"");
     window[varName]=val;
