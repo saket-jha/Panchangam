@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Excel Data Lookup (Dropbox, Devanagari Support) — Nakshatra Only</title>
+<title>सूर्यसिद्धान्तीय पञ्चाङ्गम्</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   body{margin-left: 25%; margin-right: 25%; font-size: larger; text-align: center;  font-family:'Noto Sans Devanagari',Arial,sans-serif;background:#f7f9fc;padding:24px;}
@@ -154,6 +154,7 @@ function searchData(){
   for(let i=1;i<headers.length;i++){
     const title = headers[i] || ("col"+i);
     let val = row[i];
+    
     if(typeof val === "string" && /^\d{1,2}:\d{2}(:\d{2})?$/.test(val.trim())){}
     else if(val !== "" && !isNaN(val)) {
       const num = parseFloat(val);
@@ -255,13 +256,13 @@ function searchData(){
 
 
      if (window.col13 === "00:00:00" ){
-      document.getElementById("rashi").innerText = "(चन्द्रमा *" + rashiMap[rashi] + " राशि* में सुर्योदयपर्यन्त";
+      document.getElementById("rashi").innerText = "(चन्द्रमा *" + rashiMap[rashi] + " राशि* में अहोरात्र";
       document.getElementById("rashyant").innerText = " ";
       document.getElementById("rashi2").innerText = " ";
      } else {
      document.getElementById("rashi").innerText = "(चन्द्रमा *" + rashiMap[rashi] + " राशि* में ";
      document.getElementById("rashyant").innerText = window.col13 + " बजे तक तदुपरान्त ";
-     document.getElementById("rashi2").innerText = "*" + rashiMap[rashi2] + " राशि* में सुर्योदयपर्यन्त ";
+     document.getElementById("rashi2").innerText = "*" + rashiMap[rashi2] + " राशि* में ";
 
      }
     /*
@@ -311,7 +312,29 @@ if (window.col13 === "00:00:00") {
   }
   replaceDigits(document.getElementById("govindji"));
   document.getElementById("govindji").style.display ="block";
+  const textToCopy = document.getElementById("govindji").innerText;
+   navigator.clipboard.writeText(textToCopy);
+
+
 }
+
+function copyDivText() {
+       // Get the div element by its ID
+       const divToCopy = document.getElementById('govindji');
+
+       // Get the inner text content of the div
+       const textToCopy = divToCopy.innerText;
+
+       // Use the Clipboard API to write the text to the clipboard
+       navigator.clipboard.writeText(textToCopy)
+           .then(() => {
+               alert('Text copied to clipboard!');
+           })
+           .catch(err => {
+               console.error('Failed to copy text: ', err);
+               alert('Failed to copy text.');
+           });
+   }
 
 
 </script>
