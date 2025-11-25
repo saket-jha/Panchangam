@@ -52,6 +52,8 @@
 
 <h3 style="text-align: center; font-size: larger;">चयनित दिनाङ्क का पञ्चाङ्ग</h3>
 <div id="result" style="text-align: center; font-size: larger;"></div>
+<p> <span id="test"></span> </p>
+
 
 <script>
 let workbookData = null;
@@ -164,76 +166,281 @@ function searchData(){
     }
 
 
-    const varName=name.replace(/\s+/g,"_").replace(/[^a-zA-Z0-9_]/g,"");
+   // const varName=name.replace(/\s+/g,"_").replace(/[^a-zA-Z0-9_]/g,"");
+    const varName = "col"+i;
     window[varName]=val;
 
     
     out+=`<b>${name}:</b> <span id="${varName}">${val}</span><br>`;
+    document.getElementById("test").innerText = window.col3;
 
   }
   
   resDiv.innerHTML=out;
 }
 </script>
-<script>
-  // Get elements
-  const button = document.getElementById("showBtn");
-  const div = document.getElementById("dwivediJi");
-
-  // When the button is clicked → show the div
-  button.addEventListener("click", () => {
-    div.style.display = "block"; // or "flex" if using flexbox
-  });
 
 
-  var maas = 
+<!-- START: Graha Chakra Enhancer (append this BEFORE </body>) 
+<style>
+  /* Enhancer styles (isolated) */
+  #grahaEnhancerControls{margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  #grahaChartWrap{margin-top:12px;border-radius:10px;padding:10px;background:#fff;border:1px solid #eee}
+  #grahaCanvas{width:100%;height:auto;display:block}
+  #grahaTooltip{position:absolute;pointer-events:none;background:rgba(0,0,0,0.85);color:#fff;padding:6px 8px;border-radius:6px;font-size:13px;display:none;z-index:9999}
+  .graha-btn{padding:6px 10px;border-radius:6px;border:1px solid #ccc;background:#007bff;color:#fff;cursor:pointer}
+  .graha-small{font-size:13px;color:#666}
+</style>
 
-
-
-  function show() {
-    document.getElementById("dwivediJi").style.display = "block"
-    document.getElementById("testing").innerText = दिन;
-  }
-</script>
-<!--
-<button id="showBtn" onclick="show()"></button>
-
-
-<div id="dwivediJi">
-<p id="testing">॥ॐ श्रीगणेशाय नम:॥ </p>
-<p></p>
-<p>॥श्रीसूर्यसिद्धान्तीय 🌞 काशीस्थ पञ्चाङ्ग॥</p>
-<p></p>
-<p>* विक्रम सम्वत - २०८२ "सिद्धार्थ नामक संवत्सर"</p>
-<p>* शक सम्वत - १९४७</p>
-<p></p>
-<p>* ऋतु    - शरद </p>
-<p>        </p>
-<p>* मास व पक्ष – कार्तिकशुक्लपक्ष </p>
-<p></p>
-<p>वार       - रविवार    </p>
-<p></p>
-<p>तिथि    - द्वादशी (रात्रि ००:५६ बजे तक) </p>
-<p>नक्षत्र    - पूर्वाभाद्रपद (१३:३५ बजे तक)  </p>
-<p>- (चन्द्रमा कुम्भ राशि में प्रातः ०७:४६ बजे तक तदुपरान्त मीन राशि में)  </p>
-<p> </p>
-<p>करण १    - बव (१३:४३ बजे तक)</p>
-<p>करण २    - बालव (रात्रि ००:५६ बजे तक) </p>
-<p>करण ३    - कौलव (सूर्योदयपर्यन्त)</p>
-<p></p>
-<p>योग      - व्याघात (रात्रि २१:०१ बजे तक) </p>
-<p>        </p>
-<p>* सूर्योदय    - ०६:०८ बजे </p>
-<p>* सूर्यास्त    - १७:१३ बजे </p>
-<p></p>
-<p>* दिशाशूल     - पश्चिम</p>
-<p></p>
-<p>ख्रिष्टीय वर्षानुसार दिनांक ०२ नवम्बर २०२५ ई०</p>
-<p></p>
-<p>॥तन्मेमनः शिवसङ्कल्पमस्तु॥</p>
-<p>***********</p>
-<p>(कृपया समय २४ घण्टे के प्रारूप में पढ़ें, पञ्चाङ्ग में कालगणना सूर्योदय के पश्चात होती है।)</p>
+<div id="grahaEnhancerControls">
+  <label class="graha-small">Graha Chart:</label>
+  <select id="grahaStyle" class="graha-small">
+    <option value="south">South (Wheel)</option>
+    <option value="north">North (Square)</option>
+  </select>
+  <button id="grahaExport" class="graha-btn">Export PNG</button>
+  <button id="grahaPrint" class="graha-btn">Print</button>
+  <span class="graha-small" style="margin-left:8px;color:#444">(This enhancer uses your existing col17..col24 values.)</span>
 </div>
+
+<div id="grahaChartWrap">
+  <canvas id="grahaCanvas" width="800" height="800" aria-label="Graha Chakra Canvas"></canvas>
+  <div id="grahaTooltip"></div>
+</div>
+
+<script>
+(function(){
+  // --- safety: do not overwrite existing names ---
+  if(window.__grahaEnhancerInstalled) return;
+  window.__grahaEnhancerInstalled = true;
+
+  // config: rashi names, colors, and planet mapping (col indices are as you set)
+  const rashiNames = ['मेष','वृषभ','मिथुन','कर्क','सिंह','कन्या','तुला','वृश्चिक','धनु','मकर','कुम्भ','मीन'];
+  const rashiColors = ['#ffd54f','#ffb74d','#ff8a65','#a1887f','#90a4ae','#b39ddb','#81c784','#4db6ac','#64b5f6','#4fc3f7','#aed581','#ffb74d'];
+
+  const planets = [
+    {label: 'सूर्य', col:17, color:'#f44336'},
+    {label: 'चन्द्र', col:18, color:'#90caf9'},
+    {label: 'मंगल', col:19, color:'#e57373'},
+    {label: 'बुध',   col:20, color:'#aed581'},
+    {label: 'गुरु',  col:21, color:'#ffeb3b'},
+    {label: 'शुक्र', col:22, color:'#f06292'},
+    {label: 'शनि',  col:23, color:'#455a64'},
+    {label: 'राहु', col:24, color:'#6a1b9a'}
+    // Ketu if present => col:25
+  ];
+
+  // helpers
+  function getCol(i){ return Number(window['col'+i] ?? NaN); }
+  function clamp360(d){ return ((d%360)+360)%360; }
+  function formatDeg(d){ if(isNaN(d)) return ''; d = clamp360(d); const deg = Math.floor(d); const min = Math.floor((d-deg)*60); return deg + '°' + (min ? (min + "′") : ''); }
+  function hexToRGBA(hex,alpha){
+    const c = hex.replace('#',''); const num = parseInt(c,16);
+    const r=(num>>16)&255, g=(num>>8)&255, b=num&255;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  // canvas & responsiveness
+  const canvas = document.getElementById('grahaCanvas');
+  const tooltip = document.getElementById('grahaTooltip');
+  let ctx, size;
+
+  function setup(){
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    // keep square based on width
+    size = Math.max(320, Math.min(rect.width, 900));
+    canvas.width = Math.round(size * dpr);
+    canvas.height = Math.round(size * dpr);
+    canvas.style.height = size + 'px';
+    // keep css width 100%
+    canvas.style.width = '100%';
+    ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  // draw functions
+  function drawWheel(){
+    setup();
+    ctx.clearRect(0,0,size,size);
+    const cx = size/2, cy = size/2, R = size*0.42;
+
+    // rashis: 12 segments
+    for(let i=0;i<12;i++){
+      const start = (i*30 - 90) * Math.PI/180;
+      const end = ((i+1)*30 - 90) * Math.PI/180;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,R,start,end);
+      ctx.closePath();
+      ctx.fillStyle = hexToRGBA(rashiColors[i], 0.06);
+      ctx.fill();
+      ctx.strokeStyle = '#ddd';
+      ctx.stroke();
+
+      // label
+      const mid = (start + end)/2;
+      const tx = cx + (R + 30) * Math.cos(mid);
+      const ty = cy + (R + 30) * Math.sin(mid);
+      ctx.fillStyle = '#222';
+      ctx.font = Math.max(12, Math.round(size*0.02)) + 'px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(rashiNames[i], tx, ty);
+    }
+
+    // outer boundary
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.strokeStyle = '#bbb'; ctx.stroke();
+
+    // planets
+    planets.forEach(p=>{
+      const deg = getCol(p.col);
+      if(isNaN(deg)) { p._pos = null; return; }
+      const rad = (deg - 90) * Math.PI/180;
+      const px = cx + R * Math.cos(rad);
+      const py = cy + R * Math.sin(rad);
+      // marker
+      ctx.beginPath();
+      ctx.fillStyle = p.color;
+      ctx.strokeStyle = '#00000030';
+      ctx.lineWidth = 0.5;
+      ctx.arc(px,py, Math.max(6, size*0.008), 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+      // label (small)
+      ctx.font = Math.max(11, Math.round(size*0.014)) + 'px Arial';
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'left';
+      ctx.fillText(p.label + ' ' + formatDeg(deg), px + Math.max(8, size*0.02), py + 4);
+      p._pos = {x:px, y:py, deg:deg};
+    });
+  }
+
+  function drawNorth(){
+    setup();
+    ctx.clearRect(0,0,size,size);
+    const cx = size/2, cy = size/2;
+    const box = Math.min(size*0.22, 150);
+    // simplified north layout (12 boxes)
+    const layout = [
+      {x:cx-box/2,y:cy-box*1.6},{x:cx+box/2,y:cy-box*1.6},
+      {x:cx-box*1.6,y:cy-box/2},{x:cx-box*1.6,y:cy+box/2},
+      {x:cx-box/2,y:cy+box*1.6},{x:cx+box/2,y:cy+box*1.6},
+      {x:cx+box*1.6,y:cy+box/2},{x:cx+box*1.6,y:cy-box/2},
+      {x:cx-box/2,y:cy-box/2},{x:cx+box/2,y:cy-box/2},
+      {x:cx-box/2,y:cy+box/2},{x:cx+box/2,y:cy+box/2}
+    ];
+
+    ctx.font = Math.max(12, Math.round(size*0.015)) + 'px Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+    for(let i=0;i<12;i++){
+      const pos = layout[i];
+      ctx.beginPath();
+      ctx.rect(pos.x-box/2, pos.y-box/2, box, box);
+      ctx.fillStyle = hexToRGBA(rashiColors[i], 0.06);
+      ctx.fill();
+      ctx.strokeStyle = '#ddd';
+      ctx.stroke();
+      ctx.fillStyle = '#111';
+      ctx.fillText(rashiNames[i], pos.x, pos.y - (box*0.12));
+    }
+
+    // place planets into boxes by rashi index
+    planets.forEach(p=>{
+      const deg = getCol(p.col);
+      if(isNaN(deg)) { p._pos = null; return; }
+      const ridx = Math.floor(clamp360(deg) / 30) % 12;
+      const pos = layout[ridx];
+      // jitter
+      const px = pos.x - box*0.22 + Math.random() * box * 0.44;
+      const py = pos.y - box*0.02 + Math.random() * box * 0.4;
+      ctx.beginPath(); ctx.fillStyle = p.color; ctx.arc(px,py, Math.max(6,size*0.0075), 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#000'; ctx.textAlign='left'; ctx.fillText(p.label + ' ' + formatDeg(deg), px + Math.max(10,size*0.02), py);
+      p._pos = {x:px,y:py,deg:deg};
+    });
+  }
+
+  // render dispatcher
+  function render(){
+    const style = (document.getElementById('grahaStyle') || {value:'south'}).value;
+    if(!ctx) setup();
+    if(style === 'north') drawNorth();
+    else drawWheel();
+  }
+
+  // tooltip handling
+  function handleTooltip(ev){
+    if(!canvas || !canvas.getBoundingClientRect) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const y = ev.clientY - rect.top;
+    let closest = null, dmin = 1e9;
+    planets.forEach(p=>{ if(!p._pos) return; const dx = p._pos.x - x; const dy = p._pos.y - y; const d = Math.hypot(dx,dy); if(d < dmin){ dmin = d; closest = p; } });
+    if(closest && dmin < Math.max(12, size*0.02)){
+      tooltip.style.display = 'block';
+      tooltip.style.left = (ev.pageX + 12) + 'px';
+      tooltip.style.top = (ev.pageY + 12) + 'px';
+      const rashiIdx = Math.floor(clamp360(closest._pos.deg) / 30) % 12;
+      tooltip.innerHTML = '<strong>' + closest.label + '</strong><br>' + formatDeg(closest._pos.deg) + '<br>राशि: ' + rashiNames[rashiIdx];
+    } else {
+      tooltip.style.display = 'none';
+    }
+  }
+
+  // export & print
+  function exportPNG(){
+    try{
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url; a.download = 'graha_chakra.png';
+      a.click();
+    }catch(e){ console.error(e); alert('Export failed'); }
+  }
+  function doPrint(){ window.print(); }
+
+  // Hook into existing searchData: wrap it so enhancer runs after your original searchData finishes.
+  function installHook(){
+    if(typeof window.searchData === 'function' && !window.__grahaEnhancerHooked){
+      const original = window.searchData;
+      window.searchData = function(...args){
+        // call the original (this will populate window.colN and update result)
+        const res = original.apply(this, args);
+        // schedule render after a small delay so original DOM updates and variables are ready
+        setTimeout(()=> {
+          try{ render(); } catch(e){ console.error('GrahaEnhancer render error', e); }
+        }, 50);
+        return res;
+      };
+      window.__grahaEnhancerHooked = true;
+    } else {
+      // if searchData not ready yet, try again shortly
+      setTimeout(installHook, 200);
+    }
+  }
+
+  // events
+  window.addEventListener('resize', function(){ setTimeout(render, 120); });
+  canvas.addEventListener('mousemove', handleTooltip);
+  canvas.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
+  document.getElementById('grahaExport').addEventListener('click', exportPNG);
+  document.getElementById('grahaPrint').addEventListener('click', doPrint);
+  const styleSelect = document.getElementById('grahaStyle'); styleSelect && styleSelect.addEventListener('change', () => { render(); });
+
+  // initial run: try to hook and draw (if data exists)
+  installHook();
+
+  // also allow manual draw if user wants: call renderFromEnhancer()
+  window.renderFromEnhancer = function(){ try{ render(); }catch(e){console.error(e);} };
+
+  // if page already had col values (user ran search before attaching), render now
+  setTimeout(()=> {
+    try{ render(); }catch(e){/* ignore */ }
+  }, 300);
+
+})();
+</script>
+ END: Graha Chakra Enhancer -->
+
 
 </body>
 </html>

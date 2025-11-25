@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>सूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  body{margin-left: 25%; margin-right: 25%; text-align: center; font-size: larger; font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f5f7fa;align-content: center;font-weight: bolder;}
+  input,select,button{margin:6px 0;padding:8px;border:1px solid #ccc;border-radius:6px;}
+  button{background:#007bff;color:#fff;cursor:pointer;}
+  button:hover{background:#0056b3;}
+  #result{background:#fff;border-radius:10px;padding:20px;margin-top:20px;
+          box-shadow:0 0 10px rgba(0,0,0,0.1);}
+  b{color:#007bff;}
+</style>
+<style>
+  /* Initially hide the div */
+  #dwivediJi {
+    display: none;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body style="margin-left: 20%; margin-right: 20%;">
+
+<h1 style="text-align: center; font-size: larger;">सूर्यसिद्धान्तीय पञ्चाङ्गम् </h1>
+
+<label></label><br>
+<input type="file" id="excelFile" style="font-size:xx-small; display: none;" accept=".xlsx,.xls" /><br>
+
+<select id="fileLink">
+  <option value="">स्थान चुनें</option>
+  <option value="saket-jha.github.io/Panchangam/kashi2026.xlsx">
+    काशी
+  </option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/foystnbeaarsjoe2wth6d/.xlsx?rlkey=mm9i9gecfwtyacn2s4cfsnicx&st=nfm45zkt&st=kqv17s3q">
+    जयपुर
+  </option>
+</select><br><br>
+
+<button onclick="loadFile()">पुष्टि करें</button><br><br>
+
+<div id="dateSection" style="display:none; text-align: center;">
+  <label style="font-size: larger;">आङ्ग्ल दिनाङ्क चुनें</label><br>
+  <input type="date" style="font-size: larger;" id="datePicker" /><br><br>
+  <button onclick="searchData()" style="font-size: larger;">पञ्चाङ्ग</button>
+</div>
+
+<h3 style="text-align: center; font-size: larger;">चयनित दिनाङ्क का पञ्चाङ्ग</h3>
+<div id="result" style="text-align: center; font-size: larger;"></div>
+<p> <span id="test"></span> </p>
+
+
+<script>
+let workbookData = null;
+
+// Convert Excel serial or date-like string → dd/mm/yyyy
+function normalizeDate(v){
+  if(!v) return "";
+  if(!isNaN(v)){
+    const base=new Date(Date.UTC(1899,11,30));
+    base.setDate(base.getDate()+Number(v));
+    return base.toLocaleDateString("en-GB");
+  }
+  const d=new Date(v);
+  if(!isNaN(d)) return d.toLocaleDateString("en-GB");
+  return v.toString().trim();
+}
+
+// Convert Excel decimal → HH:MM:SS (supports >24 hrs)
+function excelTimeToHMS(value){
+  if(isNaN(value)) return value;
+  const totalSec=Math.round(value*24*3600);
+  const h=Math.floor(totalSec/3600);
+  const m=Math.floor((totalSec%3600)/60);
+  const s=totalSec%60;
+  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
+}
+
+// Load Excel file
+async function loadFile() {
+
+  const link = document.getElementById("fileLink").value;
+  const resDiv = document.getElementById("result");
+
+  if (!link) {
+    resDiv.innerHTML = "⚠️ कृपया पहले स्थान चुनें";
+    return;
+  }
+
+  resDiv.innerHTML = "⏳ फ़ाइल लोड हो रही है...";
+
+  try {
+    // 🔥 Directly load local XLSX file from same folder
+    const resp = await fetch(link);
+
+    if (!resp.ok) {
+      throw new Error("फ़ाइल नहीं मिली: " + link);
+    }
+
+    const buffer = await resp.arrayBuffer();
+
+    const wb = XLSX.read(new Uint8Array(buffer), { type: "array" });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+
+    workbookData = XLSX.utils.sheet_to_json(sheet, {
+      header: 1,
+      raw: true,
+      defval: ""
+    });
+
+    document.getElementById("dateSection").style.display = "block";
+    resDiv.innerHTML = "✅ गणना हेतु दिनांक चुनें";
+
+  } catch (err) {
+    console.error(err);
+    resDiv.innerHTML = "❌ त्रुटि: " + err.message;
+  }
+}
+
+// Search data for selected date
+function searchData(){
+  if(!workbookData){document.getElementById("result").innerHTML="⚠️ Load a file first.";return;}
+  const picker=document.getElementById("datePicker");
+  if(!picker.value){document.getElementById("result").innerHTML="⚠️ Please select a date.";return;}
+  const selectedDate=new Date(picker.value).toLocaleDateString("en-GB");
+  const headers=workbookData[0];
+  const row=workbookData.find((r,i)=>i>0 && normalizeDate(r[0])===selectedDate);
+  const resDiv=document.getElementById("result");
+
+  if(!row){resDiv.innerHTML="❌ दिनाङ्क "+selectedDate+"उपलब्ध नहीं है";return;}
+
+  let out=`<b>Date:</b> ${selectedDate}<br><br>`;
+  for(let i=1;i<headers.length;i++){
+    const name=headers[i];
+    let val=row[i];
+//Roman to Devnagri mapping word by word:
+  const dayMap = { Sun:"रविवार", Mon:"सोमवार", Tue:"मङ्गलवार", Wed:"बुधवार", Thu:"बृहस्पतिवार", Fri:"शुक्रवार", Sat:"शनिवार" };
+  if(i === 2 && dayMap[val]) 
+    val = dayMap[val];
+  // nakshatra name mapping (if col2 has Sun/Mon etc.)
+  const nakshatraMap = { "1-Ashvini": "अश्विनी", "2-Bharani": "भरणी", "3-Krittikä": "कृत्तिका", "5-Mrigshirä": "रोहिणी", "6-Ärdrä": "मृगशिरा", "7-Punarvasu": "आर्द्रा", "8-Pušya": "पुनर्वसु", "9-Äshlešä": "पुष्य", "10-Maghä": "अश्लेषा", "11-1Phälguni": "मघा", "12-2Phälguni": "पूर्वाफाल्गुनी", "13-Hasta": "उत्तराफाल्गुनी", "14-Chiträ": "हस्त", "15-Sväti": "चित्रा", "15-Sväti": "स्वाती", "16-Vishäkhä": "विशाखा", "17-Anurädhä": "अनुराधा", "18-Jyešthä": "ज्येष्ठा", "19-Moola": "मुल", "20-1Äšädha": "पुर्वाषाढा", "21-2Äšädha": "उत्तरषाढा", "22-Shravana": "श्रवण", "23-Dhaništhä": "धनिष्ठा", "24-Shatbhiš": "शतभिषा", "25-1Bhädrpad": "पूर्वभाद्रपद", "26-2Bhädrpad": "उत्तरभाद्रपद", "27-Revati": "रेवती" };
+  if(i === 16 && nakshatraMap[val]) 
+    val = nakshatraMap[val];
+
+  // yog name mapping (if col5 has 01:Viškambh etc.)
+  const yogMap = { "01:Viškambh": "विष्कुम्भ", "02:Preeti": "प्रीति", "03:Ayušmän": "आयुष्मान", "04:Saubhägy": "सौभाग्य", "05:Shobhan": "शोभन", "06:Atigand": "अतिगण्ड", "07:Sukarman": "सुकर्मा", "08:Dhriti": "धृति", "09:Shoola": "शूल", "10:Ganda": "गण्ड", "11:Vriddhi": "वृद्धि", "12:Dhruva": "ध्रुव", "13:Vyäghät": "व्याघात", "14:Haršan": "हर्षण", "15:Vajra": "वज्र", "16:Siddhi": "सिद्धि", "17:Vyatipät": "व्यतीपात", "18:Variyän": "वरीयान्", "19:Parigha": "परिघ", "20:Shiva": "शिव", "21:Siddha": "सिद्ध", "22:Sädhy": "साध्य", "23:Shubha": "शुभ", "24:Shukla": "शुक्ल", "25:Brahma": "ब्रह्म", "26:Indra": "इन्द्र", "27:Vædhrti": "वैधृति"};
+  if(i === 5 && yogMap[val]) 
+  val = yogMap[val];
+
+ // day name mapping (if col2 has Sun/Mon etc.)
+  const karanMap = { "Bava": "बव", "Bälav": "बालव", "Kaulav": "कौलव", "Taitil": "तैतिल", "Gara": "गर", "Vanij": "वणिज", "Višti": "विष्टि *(भद्रा)*", "Shakun": "शकुनि", "Chatuš": "चतुष्पाद", "Näga": "नाग", "Kimstu": "किस्तुघ्न" };
+  if(i === 7 && karanMap[val]) 
+  val = karanMap[val];
+
+
+//Roman to Devnagri mapping samapta
+
+    // ✅ Step 1: Check if this is column 13 (index 12)
+  if (i === 13 && String(val).trim() === "0") {
+    val = "अहोरात्र"; // Replace directly
+  }
+
+  // ✅ Step 2: Handle time formatting logic for other columns
+  else
+
+    if(typeof val==="string" && /^\d{2,}:\d{2}(:\d{2})?$/.test(val.trim())){
+      // Already formatted time
+    }else if(!isNaN(val)&&val!==""){
+      const num=parseFloat(val);
+      if(num>=0 && num<2 && i !== 3) val=excelTimeToHMS(num);
+    }
+
+
+   // const varName=name.replace(/\s+/g,"_").replace(/[^a-zA-Z0-9_]/g,"");
+    const varName = "col"+i;
+    window[varName]=val;
+
+    
+    out+=`<b>${name}:</b> <span id="${varName}">${val}</span><br>`;
+    document.getElementById("test").innerText = window.col3;
+
+  }
+  
+  resDiv.innerHTML=out;
+}
+</script>
+
+
+<!-- START: Graha Chakra Enhancer (append this BEFORE </body>) -->
+<style>
+  /* Enhancer styles (isolated) */
+  #grahaEnhancerControls{margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  #grahaChartWrap{margin-top:12px;border-radius:10px;padding:10px;background:#fff;border:1px solid #eee}
+  #grahaCanvas{width:100%;height:auto;display:block}
+  #grahaTooltip{position:absolute;pointer-events:none;background:rgba(0,0,0,0.85);color:#fff;padding:6px 8px;border-radius:6px;font-size:13px;display:none;z-index:9999}
+  .graha-btn{padding:6px 10px;border-radius:6px;border:1px solid #ccc;background:#007bff;color:#fff;cursor:pointer}
+  .graha-small{font-size:13px;color:#666}
+</style>
+
+<div id="grahaEnhancerControls">
+  <label class="graha-small">Graha Chart:</label>
+  <select id="grahaStyle" class="graha-small">
+    <option value="south">South (Wheel)</option>
+    <option value="north">North (Square)</option>
+  </select>
+  <button id="grahaExport" class="graha-btn">Export PNG</button>
+  <button id="grahaPrint" class="graha-btn">Print</button>
+  <span class="graha-small" style="margin-left:8px;color:#444">(This enhancer uses your existing col17..col24 values.)</span>
+</div>
+
+<div id="grahaChartWrap">
+  <canvas id="grahaCanvas" width="800" height="800" aria-label="Graha Chakra Canvas"></canvas>
+  <div id="grahaTooltip"></div>
+</div>
+
+<script>
+(function(){
+  // --- safety: do not overwrite existing names ---
+  if(window.__grahaEnhancerInstalled) return;
+  window.__grahaEnhancerInstalled = true;
+
+  // config: rashi names, colors, and planet mapping (col indices are as you set)
+  const rashiNames = ['मेष','वृषभ','मिथुन','कर्क','सिंह','कन्या','तुला','वृश्चिक','धनु','मकर','कुम्भ','मीन'];
+  const rashiColors = ['#ffd54f','#ffb74d','#ff8a65','#a1887f','#90a4ae','#b39ddb','#81c784','#4db6ac','#64b5f6','#4fc3f7','#aed581','#ffb74d'];
+
+  const planets = [
+    {label: 'सूर्य', col:17, color:'#f44336'},
+    {label: 'चन्द्र', col:18, color:'#90caf9'},
+    {label: 'मंगल', col:19, color:'#e57373'},
+    {label: 'बुध',   col:20, color:'#aed581'},
+    {label: 'गुरु',  col:21, color:'#ffeb3b'},
+    {label: 'शुक्र', col:22, color:'#f06292'},
+    {label: 'शनि',  col:23, color:'#455a64'},
+    {label: 'राहु', col:24, color:'#6a1b9a'}
+    // Ketu if present => col:25
+  ];
+
+  // helpers
+  function getCol(i){ return Number(window['col'+i] ?? NaN); }
+  function clamp360(d){ return ((d%360)+360)%360; }
+  function formatDeg(d){ if(isNaN(d)) return ''; d = clamp360(d); const deg = Math.floor(d); const min = Math.floor((d-deg)*60); return deg + '°' + (min ? (min + "′") : ''); }
+  function hexToRGBA(hex,alpha){
+    const c = hex.replace('#',''); const num = parseInt(c,16);
+    const r=(num>>16)&255, g=(num>>8)&255, b=num&255;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  // canvas & responsiveness
+  const canvas = document.getElementById('grahaCanvas');
+  const tooltip = document.getElementById('grahaTooltip');
+  let ctx, size;
+
+  function setup(){
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    // keep square based on width
+    size = Math.max(320, Math.min(rect.width, 900));
+    canvas.width = Math.round(size * dpr);
+    canvas.height = Math.round(size * dpr);
+    canvas.style.height = size + 'px';
+    // keep css width 100%
+    canvas.style.width = '100%';
+    ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  // draw functions
+  function drawWheel(){
+    setup();
+    ctx.clearRect(0,0,size,size);
+    const cx = size/2, cy = size/2, R = size*0.42;
+
+    // rashis: 12 segments
+    for(let i=0;i<12;i++){
+      const start = (i*30 - 90) * Math.PI/180;
+      const end = ((i+1)*30 - 90) * Math.PI/180;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,R,start,end);
+      ctx.closePath();
+      ctx.fillStyle = hexToRGBA(rashiColors[i], 0.06);
+      ctx.fill();
+      ctx.strokeStyle = '#ddd';
+      ctx.stroke();
+
+      // label
+      const mid = (start + end)/2;
+      const tx = cx + (R + 30) * Math.cos(mid);
+      const ty = cy + (R + 30) * Math.sin(mid);
+      ctx.fillStyle = '#222';
+      ctx.font = Math.max(12, Math.round(size*0.02)) + 'px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(rashiNames[i], tx, ty);
+    }
+
+    // outer boundary
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.strokeStyle = '#bbb'; ctx.stroke();
+
+    // planets
+    planets.forEach(p=>{
+      const deg = getCol(p.col);
+      if(isNaN(deg)) { p._pos = null; return; }
+      const rad = (deg - 90) * Math.PI/180;
+      const px = cx + R * Math.cos(rad);
+      const py = cy + R * Math.sin(rad);
+      // marker
+      ctx.beginPath();
+      ctx.fillStyle = p.color;
+      ctx.strokeStyle = '#00000030';
+      ctx.lineWidth = 0.5;
+      ctx.arc(px,py, Math.max(6, size*0.008), 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+      // label (small)
+      ctx.font = Math.max(11, Math.round(size*0.014)) + 'px Arial';
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'left';
+      ctx.fillText(p.label + ' ' + formatDeg(deg), px + Math.max(8, size*0.02), py + 4);
+      p._pos = {x:px, y:py, deg:deg};
+    });
+  }
+
+  function drawNorth(){
+    setup();
+    ctx.clearRect(0,0,size,size);
+    const cx = size/2, cy = size/2;
+    const box = Math.min(size*0.22, 150);
+    // simplified north layout (12 boxes)
+    const layout = [
+      {x:cx-box/2,y:cy-box*1.6},{x:cx+box/2,y:cy-box*1.6},
+      {x:cx-box*1.6,y:cy-box/2},{x:cx-box*1.6,y:cy+box/2},
+      {x:cx-box/2,y:cy+box*1.6},{x:cx+box/2,y:cy+box*1.6},
+      {x:cx+box*1.6,y:cy+box/2},{x:cx+box*1.6,y:cy-box/2},
+      {x:cx-box/2,y:cy-box/2},{x:cx+box/2,y:cy-box/2},
+      {x:cx-box/2,y:cy+box/2},{x:cx+box/2,y:cy+box/2}
+    ];
+
+    ctx.font = Math.max(12, Math.round(size*0.015)) + 'px Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+    for(let i=0;i<12;i++){
+      const pos = layout[i];
+      ctx.beginPath();
+      ctx.rect(pos.x-box/2, pos.y-box/2, box, box);
+      ctx.fillStyle = hexToRGBA(rashiColors[i], 0.06);
+      ctx.fill();
+      ctx.strokeStyle = '#ddd';
+      ctx.stroke();
+      ctx.fillStyle = '#111';
+      ctx.fillText(rashiNames[i], pos.x, pos.y - (box*0.12));
+    }
+
+    // place planets into boxes by rashi index
+    planets.forEach(p=>{
+      const deg = getCol(p.col);
+      if(isNaN(deg)) { p._pos = null; return; }
+      const ridx = Math.floor(clamp360(deg) / 30) % 12;
+      const pos = layout[ridx];
+      // jitter
+      const px = pos.x - box*0.22 + Math.random() * box * 0.44;
+      const py = pos.y - box*0.02 + Math.random() * box * 0.4;
+      ctx.beginPath(); ctx.fillStyle = p.color; ctx.arc(px,py, Math.max(6,size*0.0075), 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#000'; ctx.textAlign='left'; ctx.fillText(p.label + ' ' + formatDeg(deg), px + Math.max(10,size*0.02), py);
+      p._pos = {x:px,y:py,deg:deg};
+    });
+  }
+
+  // render dispatcher
+  function render(){
+    const style = (document.getElementById('grahaStyle') || {value:'south'}).value;
+    if(!ctx) setup();
+    if(style === 'north') drawNorth();
+    else drawWheel();
+  }
+
+  // tooltip handling
+  function handleTooltip(ev){
+    if(!canvas || !canvas.getBoundingClientRect) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const y = ev.clientY - rect.top;
+    let closest = null, dmin = 1e9;
+    planets.forEach(p=>{ if(!p._pos) return; const dx = p._pos.x - x; const dy = p._pos.y - y; const d = Math.hypot(dx,dy); if(d < dmin){ dmin = d; closest = p; } });
+    if(closest && dmin < Math.max(12, size*0.02)){
+      tooltip.style.display = 'block';
+      tooltip.style.left = (ev.pageX + 12) + 'px';
+      tooltip.style.top = (ev.pageY + 12) + 'px';
+      const rashiIdx = Math.floor(clamp360(closest._pos.deg) / 30) % 12;
+      tooltip.innerHTML = '<strong>' + closest.label + '</strong><br>' + formatDeg(closest._pos.deg) + '<br>राशि: ' + rashiNames[rashiIdx];
+    } else {
+      tooltip.style.display = 'none';
+    }
+  }
+
+  // export & print
+  function exportPNG(){
+    try{
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url; a.download = 'graha_chakra.png';
+      a.click();
+    }catch(e){ console.error(e); alert('Export failed'); }
+  }
+  function doPrint(){ window.print(); }
+
+  // Hook into existing searchData: wrap it so enhancer runs after your original searchData finishes.
+  function installHook(){
+    if(typeof window.searchData === 'function' && !window.__grahaEnhancerHooked){
+      const original = window.searchData;
+      window.searchData = function(...args){
+        // call the original (this will populate window.colN and update result)
+        const res = original.apply(this, args);
+        // schedule render after a small delay so original DOM updates and variables are ready
+        setTimeout(()=> {
+          try{ render(); } catch(e){ console.error('GrahaEnhancer render error', e); }
+        }, 50);
+        return res;
+      };
+      window.__grahaEnhancerHooked = true;
+    } else {
+      // if searchData not ready yet, try again shortly
+      setTimeout(installHook, 200);
+    }
+  }
+
+  // events
+  window.addEventListener('resize', function(){ setTimeout(render, 120); });
+  canvas.addEventListener('mousemove', handleTooltip);
+  canvas.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
+  document.getElementById('grahaExport').addEventListener('click', exportPNG);
+  document.getElementById('grahaPrint').addEventListener('click', doPrint);
+  const styleSelect = document.getElementById('grahaStyle'); styleSelect && styleSelect.addEventListener('change', () => { render(); });
+
+  // initial run: try to hook and draw (if data exists)
+  installHook();
+
+  // also allow manual draw if user wants: call renderFromEnhancer()
+  window.renderFromEnhancer = function(){ try{ render(); }catch(e){console.error(e);} };
+
+  // if page already had col values (user ran search before attaching), render now
+  setTimeout(()=> {
+    try{ render(); }catch(e){/* ignore */ }
+  }, 300);
+
+})();
+</script>
+<!-- END: Graha Chakra Enhancer -->
+
+
+</body>
+</html>
