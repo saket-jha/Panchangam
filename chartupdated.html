@@ -82,7 +82,7 @@ function excelTimeToHMS(value){
 }
 
 // Load Excel file
-aasync function loadFile(){
+async function loadFile(){
   const file=document.getElementById("excelFile").files[0];
   const link=document.getElementById("fileLink").value.trim();
   const resDiv=document.getElementById("result");
