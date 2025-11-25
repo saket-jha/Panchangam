@@ -82,43 +82,33 @@ function excelTimeToHMS(value){
 }
 
 // Load Excel file
-async function loadFile() {
+aasync function loadFile(){
+  const file=document.getElementById("excelFile").files[0];
+  const link=document.getElementById("fileLink").value.trim();
+  const resDiv=document.getElementById("result");
+  resDiv.innerHTML="⏳ गणना हो रही है.....";
 
-  const link = document.getElementById("fileLink").value;
-  const resDiv = document.getElementById("result");
-
-  if (!link) {
-    resDiv.innerHTML = "⚠️ कृपया पहले स्थान चुनें";
-    return;
-  }
-
-  resDiv.innerHTML = "⏳ फ़ाइल लोड हो रही है...";
-
-  try {
-    // 🔥 Directly load local XLSX file from same folder
-    const resp = await fetch(link);
-
-    if (!resp.ok) {
-      throw new Error("फ़ाइल नहीं मिली: " + link);
+  try{
+    let buffer;
+    if(file){
+      buffer=await file.arrayBuffer();
+    }else if(link){
+      const resp=await fetch(link);
+      if(!resp.ok) throw new Error("Cannot load file");
+      buffer=await resp.arrayBuffer();
+    }else{
+      resDiv.innerHTML="⚠️ कृपया पहले स्थान चुनें";
+      return;
     }
 
-    const buffer = await resp.arrayBuffer();
-
-    const wb = XLSX.read(new Uint8Array(buffer), { type: "array" });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-
-    workbookData = XLSX.utils.sheet_to_json(sheet, {
-      header: 1,
-      raw: true,
-      defval: ""
-    });
-
-    document.getElementById("dateSection").style.display = "block";
-    resDiv.innerHTML = "✅ गणना हेतु दिनांक चुनें";
-
-  } catch (err) {
+    const wb=XLSX.read(new Uint8Array(buffer),{type:"array"});
+    const sh=wb.Sheets[wb.SheetNames[0]];
+    workbookData=XLSX.utils.sheet_to_json(sh,{header:1,raw:true,defval:""});
+    document.getElementById("dateSection").style.display="block";
+    resDiv.innerHTML="✅ कृपया आङ्ग्ल दिनाङ्क चुनें";
+  }catch(err){
     console.error(err);
-    resDiv.innerHTML = "❌ त्रुटि: " + err.message;
+    resDiv.innerHTML="❌ गणना करने में त्रुटि हो रही है";
   }
 }
 
