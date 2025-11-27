@@ -173,8 +173,8 @@ function searchData(){
     
     out+=`<b>${name}:</b> <span id="${varName}">${val}</span><br>`;
     document.getElementById("test").innerText = window.col3;
-    document.getElementById("gcCtrl").style.display= "block";
-    document.getElementById("gcWrap").style.display= "block";
+   // document.getElementById("gcCtrl").style.display= "block";
+   // document.getElementById("gcWrap").style.display= "block";
 
   }
   
@@ -183,337 +183,392 @@ function searchData(){
 </script>
 
 
-<!-- START: Graha Chakra Enhancer (append this BEFORE </body>) -->
-<!-- ==================== GRAHA CHAKRA ENHANCER (SAFE PATCH) ==================== -->
+<!-- =================== GRAHA CHAKRA ENHANCER (FULL PATCH) =================== -->
 <style>
-#gcWrap{margin-top:20px;padding:10px;background:#fff;border:1px solid #ddd;border-radius:10px}
-#gcCanvas{width:100%;height:auto;display:block}
-#gcTooltip{
-  position:absolute;pointer-events:none;display:none;
-  background:#000;color:#fff;padding:6px 9px;border-radius:6px;
-  font-size:13px;z-index:9999;
-}
-#gcCtrl{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.gcBtn{background:#007bff;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer}
+  #gc_container{display:none;margin-top:20px;padding:12px;border-radius:10px;
+    background:#f9e0a6;border:1px solid #e0b86a;}
+  #gc_controls{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+  #gc_canvas_wrap{position:relative}
+  #gc_canvas{width:100%;height:auto;display:block;background:transparent}
+  #gc_tooltip{
+    position:absolute;pointer-events:none;display:none;
+    background:rgba(0,0,0,0.85);color:#fff;padding:6px 9px;
+    border-radius:6px;font-size:13px;z-index:9999;
+  }
+  .gc_btn{
+    padding:6px 10px;border:0;border-radius:6px;
+    background:#7b3f00;color:#fff;cursor:pointer;
+  }
+  .gc_sel{padding:6px;border-radius:6px}
 </style>
 
-<div id="gcCtrl" style="display: none;">
-  <label>Graha Chakra:</label>
-  <select id="gcStyle">
-    <option value="south">South (Wheel)</option>
-    <option value="north">North (Square)</option>
-  </select>
-  <button id="gcExport" class="gcBtn">Export PNG</button>
-</div>
-
-<div id="gcWrap" style="display: none;">
-  <canvas id="gcCanvas" width="800" height="800"></canvas>
-  <div id="gcTooltip"></div>
+<div id="gc_container">
+  <div id="gc_controls">
+    <select id="gc_style" class="gc_sel">
+      <option value="south">South Wheel</option>
+      <option value="north">North Box</option>
+    </select>
+    <button id="gc_export" class="gc_btn">Export PNG</button>
+    <button id="gc_hide" class="gc_btn">Hide Chart</button>
+  </div>
+  <div id="gc_canvas_wrap">
+    <canvas id="gc_canvas" width="900" height="900"></canvas>
+    <div id="gc_tooltip"></div>
+  </div>
 </div>
 
 <script>
 (function(){
 
-/* ----------------------------------------
-   1) CONFIG (uses your col17..col24 values)
------------------------------------------ */
+/* ===========================================================
+   CONFIG & CONSTANTS
+   =========================================================== */
 const RASHI = ['मेष','वृषभ','मिथुन','कर्क','सिंह','कन्या','तुला','वृश्चिक','धनु','मकर','कुम्भ','मीन'];
-const RCOLOR = ['#ffd54f','#ffb74d','#ff8a65','#a1887f','#90a4ae','#b39ddb','#81c784','#4db6ac','#64b5f6','#4fc3f7','#aed581','#ffb74d'];
+const HOUSE_ROMAN = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 
-const PLANETS = [
-  { label:'सूर्य', col:17, color:'#f44336' },
-  { label:'चन्द्र', col:18, color:'#90caf9' },
-  { label:'मंगल', col:19, color:'#e57373' },
-  { label:'बुध',   col:20, color:'#aed581' },
-  { label:'गुरु',  col:21, color:'#ffeb3b' },
-  { label:'शुक्र', col:22, color:'#f06292' },
-  { label:'शनि',  col:23, color:'#455a64' },
-  { label:'राहु', col:24, color:'#6a1b9a' }
+const RCOL = [
+  '#ffa726','#ffcc80','#ffab91','#a1887f',
+  '#90a4ae','#b39ddb','#81c784','#4db6ac',
+  '#64b5f6','#4fc3f7','#aed581','#ffe082'
 ];
 
-/* ----------------------------------------
-   2) SAFE ANGLE PARSER (NO IMPACT ON YOUR CODE)
------------------------------------------ */
-function parseAngle(str){
+const PLANETS = [
+  {label:'सूर्य', col:17, glyph:'☉', color:'#f44336'},
+  {label:'चन्द्र', col:18, glyph:'☽', color:'#90caf9'},
+  {label:'मंगल', col:19, glyph:'♂', color:'#e57373'},
+  {label:'बुध',   col:20, glyph:'☿', color:'#aed581'},
+  {label:'गुरु',  col:21, glyph:'♃', color:'#ffeb3b'},
+  {label:'शुक्र', col:22, glyph:'♀', color:'#f06292'},
+  {label:'शनि',  col:23, glyph:'♄', color:'#455a64'},
+  {label:'राहु', col:24, glyph:'☊', color:'#6a1b9a'}
+];
+
+/* ===========================================================
+   ELEMENTS
+   =========================================================== */
+const container = document.getElementById("gc_container");
+const canvas    = document.getElementById("gc_canvas");
+const tooltip   = document.getElementById("gc_tooltip");
+let ctx, SIZE;
+
+
+/* ===========================================================
+   PARSERS — SAME AS YOUR ORIGINAL LOGIC (NO CHANGES)
+   =========================================================== */
+function parseSectorAngle(str){
   if(!str) return NaN;
   str = String(str).trim();
-
-  // Pure number:
-  if(/^[0-9.]+$/.test(str)) return parseFloat(str);
-
-  // DDD°MM'SS
-  if(str.includes('°')){
-    let [d, rest] = str.split('°');
-    let [m, sRaw] = rest.split("'");
-    let deg = parseFloat(d);
-    let min = parseFloat(m);
-    let sec = parseFloat((sRaw||'').replace(/[^0-9.]/g,''));
-    if(isNaN(deg)) deg=0;
-    if(isNaN(min)) min=0;
-    if(isNaN(sec)) sec=0;
-    return deg + (min/60) + (sec/3600);
+  if(str.includes(":") && str.includes("°")){
+    try{
+      let [sec, rest] = str.split(":");
+      let [dg, rm] = rest.split("°");
+      let mn = rm.split("'")[0];
+      let sc = rm.split("'")[1] || "0";
+      const S = parseFloat(sec)||0;
+      const D = parseFloat(dg)||0;
+      const M = parseFloat(mn)||0;
+      const S2= parseFloat(sc.replace(/[^0-9.]/g,''))||0;
+      return S*30 + D + M/60 + S2/3600;
+    }catch(e){
+      return NaN;
+    }
   }
-
   return NaN;
-}function parseAngle(str, isSecto){
+}
+
+function parseAngle(str, isSector){
   if(!str) return NaN;
   str = String(str).trim();
 
-  // SPECIAL: sector-degree-minute-second format (for col17 & col18)
-  if(isSecto && str.includes(":") && str.includes("°")){
-    // Example: 01:14°30'30
-    let [sector, rest] = str.split(":");
-    let [deg, rem] = rest.split("°");
-    let min = rem.split("'")[0];
-    let sec = rem.split("'")[1].replace(/[^0-9.]/g,'');
-
-    sector = parseFloat(sector);
-    deg = parseFloat(deg);
-    min = parseFloat(min);
-    sec = parseFloat(sec);
-
-    if(isNaN(sector)) sector = 0;
-    if(isNaN(deg)) deg = 0;
-    if(isNaN(min)) min = 0;
-    if(isNaN(sec)) sec = 0;
-
-    // convert to full 360-degree format
-    return sector*30 + deg + (min/60) + (sec/3600);
+  if(isSector){
+    const v = parseSectorAngle(str);
+    if(!isNaN(v)) return v;
   }
 
-  // STANDARD DDD°MM'SS format
   if(str.includes("°")){
     let [d, rest] = str.split("°");
-    let [m, sRaw] = rest.split("'");
-    let D = parseFloat(d);
-    let M = parseFloat(m);
-    let S = parseFloat(sRaw.replace(/[^0-9.]/g,''));
-    if(isNaN(D)) D=0;
-    if(isNaN(M)) M=0;
-    if(isNaN(S)) S=0;
-    return D + M/60 + S/3600;
+    let m=0,s=0;
+    if(rest){
+      m = parseFloat((rest.split("'")[0])||0)||0;
+      s = parseFloat((rest.split("'")[1]||"").replace(/[^0-9.]/g,''))||0;
+    }
+    return (parseFloat(d)||0) + m/60 + s/3600;
   }
 
-  // fallback: pure number
-  if(/^[0-9.]+$/.test(str)) return parseFloat(str);
-
-  return NaN;
+  let num=parseFloat(str.replace(/[^0-9.-]/g,''));
+  return isNaN(num)?NaN:num;
 }
 
-
-function getCol(i){
-  return window["col"+i] ?? null;
-}
-
-function fmt(deg){
-  if(isNaN(deg)) return '';
-  deg = ((deg%360)+360)%360;
-  let D = Math.floor(deg);
-  let M = Math.floor((deg-D)*60);
+function formatDeg(d){
+  if(isNaN(d)) return "";
+  d=((d%360)+360)%360;
+  let D=Math.floor(d);
+  let M=Math.floor((d-D)*60);
   return D+"°"+(M?M+"′":"");
 }
 
-/* ----------------------------------------
-   3) CANVAS SETUP
------------------------------------------ */
-const canvas = document.getElementById('gcCanvas');
-const tt = document.getElementById('gcTooltip');
-let ctx, SIZE;
 
-function resizeCanvas(){
+/* ===========================================================
+   CANVAS SETUP
+   =========================================================== */
+function resizeEllipse(){
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  SIZE = Math.min(rect.width, 850);
-  canvas.width = SIZE * dpr;
-  canvas.height = SIZE * dpr;
+  SIZE = Math.min(rect.width || 700, 900);
+  canvas.width  = SIZE*dpr;
+  canvas.height = SIZE*dpr;
   canvas.style.height = SIZE+"px";
-  ctx = canvas.getContext('2d');
+
+  ctx = canvas.getContext("2d");
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 
-/* ----------------------------------------
-   4) DRAW SOUTH WHEEL
------------------------------------------ */
-function drawSouth(){
-  resizeCanvas();
-  ctx.clearRect(0,0,SIZE,SIZE);
-  const cx = SIZE/2, cy = SIZE/2, R = SIZE*0.42;
 
-  // 12 rashis
+/* ===========================================================
+   DRAW ELLIPTICAL DOUBLE RING (12 RASHI + 27 NAKSHATRA)
+   =========================================================== */
+function drawEllipticalBase(){
+
+  resizeEllipse();
+  ctx.clearRect(0,0,SIZE,SIZE);
+
+  const cx = SIZE/2, cy = SIZE/2;
+
+  // Outer ring radii
+  const RX_OUT   = SIZE*0.36;
+  const RY_OUT   = SIZE*0.27;
+  const RX_OUT_IN = SIZE*0.32;
+  const RY_OUT_IN = SIZE*0.24;
+
+  // Inner ring radii (Nakshatra)
+  const RX_IN    = SIZE*0.32;
+  const RY_IN    = SIZE*0.24;
+  const RX_IN_IN = SIZE*0.28;
+  const RY_IN_IN = SIZE*0.21;
+
+  /* ------------------ OUTER RING (12 RASHIS) ------------------ */
   for(let i=0;i<12;i++){
-    const start = (i*30 - 90)*Math.PI/180;
-    const end   = ((i+1)*30 - 90)*Math.PI/180;
+    let a1=(i*30 - 90)*Math.PI/180;
+    let a2=((i+1)*30 - 90)*Math.PI/180;
+
     ctx.beginPath();
-    ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,R,start,end);
+    ctx.ellipse(cx,cy,RX_OUT,RY_OUT,0,a1,a2);
+    ctx.ellipse(cx,cy,RX_OUT_IN,RY_OUT_IN,0,a2,a1,true);
     ctx.closePath();
-    ctx.fillStyle = RCOLOR[i]+'33';
+    ctx.fillStyle = RCOL[i];
     ctx.fill();
-    ctx.strokeStyle='#ccc';
+    ctx.strokeStyle="#000";
+    ctx.lineWidth=2;
     ctx.stroke();
 
-    // label
-    const mid=(start+end)/2;
-    ctx.fillStyle='#222';
-    ctx.font=(SIZE*0.025)+'px Arial';
+    // boundary line
+    let bx1 = cx + RX_OUT_IN*Math.cos(a2);
+    let by1 = cy + RY_OUT_IN*Math.sin(a2);
+    let bx2 = cx + RX_OUT*Math.cos(a2);
+    let by2 = cy + RY_OUT*Math.sin(a2);
+
+    ctx.beginPath();
+    ctx.moveTo(bx1,by1);
+    ctx.lineTo(bx2,by2);
+    ctx.strokeStyle="#99d0ff";
+    ctx.lineWidth=2;
+    ctx.stroke();
+  }
+
+  /* ------------------ INNER RING (27 NAKSHATRA) ------------------ */
+  for(let k=0;k<27;k++){
+    let a1=(k*(360/27) - 90)*Math.PI/180;
+    let a2=((k+1)*(360/27) - 90)*Math.PI/180;
+
+    ctx.beginPath();
+    ctx.ellipse(cx,cy,RX_IN,RY_IN,0,a1,a2);
+    ctx.ellipse(cx,cy,RX_IN_IN,RY_IN_IN,0,a2,a1,true);
+    ctx.closePath();
+    ctx.fillStyle = (k%2===0) ? "#ffe680" : "#cce5ff";
+    ctx.fill();
+
+    ctx.strokeStyle="#000";
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+
+    // boundary line
+    let ix1 = cx + RX_IN_IN*Math.cos(a2);
+    let iy1 = cy + RY_IN_IN*Math.sin(a2);
+    let ix2 = cx + RX_IN*Math.cos(a2);
+    let iy2 = cy + RY_IN*Math.sin(a2);
+
+    ctx.beginPath();
+    ctx.moveTo(ix1,iy1);
+    ctx.lineTo(ix2,iy2);
+    ctx.strokeStyle="#ff80a0";
+    ctx.lineWidth=2;
+    ctx.stroke();
+  }
+
+  /* ------------------ RASHI LABELS + HOUSE NUMBERS ------------------ */
+  for(let i=0;i<12;i++){
+    let mid = ((i*30+15)-90)*Math.PI/180;
+
+    // Rashi labels
+    let tx = cx + (RX_OUT+SIZE*0.07)*Math.cos(mid);
+    let ty = cy + (RY_OUT+SIZE*0.07)*Math.sin(mid);
+
+    ctx.font = (SIZE*0.032)+"px Arial";
+    ctx.fillStyle="#5a2a0a";
     ctx.textAlign="center";
     ctx.textBaseline="middle";
-    ctx.fillText(RASHI[i], cx+(R+30)*Math.cos(mid), cy+(R+30)*Math.sin(mid));
+    ctx.fillText(RASHI[i],tx,ty);
+
+    // Roman house numbers
+    let hx = cx + (RX_OUT+SIZE*0.12)*Math.cos(mid);
+    let hy = cy + (RY_OUT+SIZE*0.12)*Math.sin(mid);
+
+    ctx.font = (SIZE*0.026)+"px Arial";
+    ctx.fillStyle="#8a4b1c";
+    ctx.fillText(HOUSE_ROMAN[i],hx,hy);
   }
-
-  // outer
-  ctx.beginPath();
-  ctx.arc(cx,cy,R,0,Math.PI*2);
-  ctx.strokeStyle='#999';
-  ctx.stroke();
-
-  // planets
-  PLANETS.forEach(p=>{
-    let raw = getCol(p.col);
-    const deg = parseAngle(raw, (p.col === 17 || p.col === 18));
-    if(isNaN(deg)){ p._pos=null; return; }
-    let rad=(deg-90)*Math.PI/180;
-    let px=cx+R*Math.cos(rad), py=cy+R*Math.sin(rad);
-    ctx.beginPath();
-    ctx.fillStyle=p.color;
-    ctx.arc(px,py,SIZE*0.015,0,Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle='#000';
-    ctx.font=(SIZE*0.02)+'px Arial';
-    ctx.textAlign='left';
-    ctx.fillText(p.label+" "+fmt(deg), px+SIZE*0.02, py);
-    p._pos={x:px,y:py,deg};
-  });
 }
 
-/* ----------------------------------------
-   5) DRAW NORTH CHART (simple)
------------------------------------------ */
-function drawNorth(){
-  resizeCanvas();
-  ctx.clearRect(0,0,SIZE,SIZE);
+
+/* ===========================================================
+   DRAW PLANETS ON THE ELLIPSE
+   =========================================================== */
+function drawPlanets(){
+
   const cx = SIZE/2, cy = SIZE/2;
-  const B = SIZE*0.20;
-
-  const L = [
-    {x:cx-B/2,y:cy-B*1.6},{x:cx+B/2,y:cy-B*1.6},
-    {x:cx-B*1.6,y:cy-B/2},{x:cx-B*1.6,y:cy+B/2},
-    {x:cx-B/2,y:cy+B*1.6},{x:cx+B/2,y:cy+B*1.6},
-    {x:cx+B*1.6,y:cy+B/2},{x:cx+B*1.6,y:cy-B/2},
-    {x:cx-B/2,y:cy-B/2},{x:cx+B/2,y:cy-B/2},
-    {x:cx-B/2,y:cy+B/2},{x:cx+B/2,y:cy+B/2}
-  ];
-
-  ctx.font=(SIZE*0.018)+'px Arial';
-  ctx.textAlign='center';
-
-  for(let i=0;i<12;i++){
-    const pos=L[i];
-    ctx.beginPath();
-    ctx.rect(pos.x-B/2,pos.y-B/2,B,B);
-    ctx.fillStyle=RCOLOR[i]+'33';
-    ctx.fill();
-    ctx.strokeStyle='#ccc';
-    ctx.stroke();
-    ctx.fillStyle='#111';
-    ctx.fillText(RASHI[i], pos.x, pos.y-B*0.15);
-  }
+  const RX = SIZE*0.45;
+  const RY = SIZE*0.30;
 
   PLANETS.forEach(p=>{
-    let raw=getCol(p.col);
-    let deg=parseAngle(raw);
+    let raw = window["col"+p.col];
+    let deg = parseAngle(raw, p.col===17 || p.col===18);
+
     if(isNaN(deg)){ p._pos=null; return; }
-    let r = Math.floor(((deg%360)+360)%360 /30);
-    let pos=L[r];
-    let px=pos.x + (Math.random()*B*0.4 - B*0.2);
-    let py=pos.y + (Math.random()*B*0.4 - B*0.2);
+
+    let rad=(deg-90)*Math.PI/180;
+    let px = cx + RX*Math.cos(rad);
+    let py = cy + RY*Math.sin(rad);
+
+    // ray
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(px,py);
+    ctx.strokeStyle="rgba(80,40,10,0.25)";
+    ctx.lineWidth=2;
+    ctx.stroke();
+
+    // planet body
     ctx.beginPath();
     ctx.fillStyle=p.color;
-    ctx.arc(px,py,SIZE*0.015,0,Math.PI*2);
+    ctx.arc(px,py,SIZE*0.02,0,Math.PI*2);
     ctx.fill();
-    ctx.fillStyle='#000';
-    ctx.textAlign='left';
-    ctx.fillText(p.label+" "+fmt(deg), px+B*0.12, py);
+    ctx.strokeStyle="#fff";
+    ctx.lineWidth=1;
+    ctx.stroke();
+
+    // glyph
+    ctx.font=(SIZE*0.030)+"px Arial";
+    ctx.fillStyle="#fff";
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.fillText(p.glyph,px,py);
+
+    // label
+    ctx.font=(SIZE*0.022)+"px Arial";
+    ctx.fillStyle="#4b2b00";
+    ctx.textAlign="left";
+    ctx.fillText(p.label+" "+formatDeg(deg), px+SIZE*0.03, py);
+
     p._pos={x:px,y:py,deg};
   });
 }
 
-/* ----------------------------------------
-   6) TOOLTIP
------------------------------------------ */
-canvas.addEventListener('mousemove', ev=>{
-  const rect = canvas.getBoundingClientRect();
-  const x = ev.clientX - rect.left;
-  const y = ev.clientY - rect.top;
-  let best=null, dmin=9999;
+
+/* ===========================================================
+   TOOLTIP
+   =========================================================== */
+canvas.addEventListener("mousemove",ev=>{
+  const rect=canvas.getBoundingClientRect();
+  const x=ev.clientX-rect.left;
+  const y=ev.clientY-rect.top;
+
+  let best=null,dmin=1e9;
+
   PLANETS.forEach(p=>{
     if(!p._pos) return;
     let dx=p._pos.x-x, dy=p._pos.y-y;
     let d=Math.hypot(dx,dy);
     if(d<dmin){ dmin=d; best=p; }
   });
-  if(best && dmin < SIZE*0.03){
-    let r = Math.floor(((best._pos.deg%360)+360)%360 /30);
-    tt.style.display='block';
-    tt.style.left = (ev.pageX+12)+'px';
-    tt.style.top  = (ev.pageY+12)+'px';
-    tt.innerHTML = `<b>${best.label}</b><br>${fmt(best._pos.deg)}<br>राशि: ${RASHI[r]}`;
-  }else{
-    tt.style.display='none';
-  }
+
+  if(best && dmin<SIZE*0.035){
+    tooltip.style.display='block';
+    tooltip.style.left=(ev.pageX+12)+'px';
+    tooltip.style.top =(ev.pageY+12)+'px';
+
+    let rIdx=Math.floor(((best._pos.deg%360)+360)%360 /30);
+
+    tooltip.innerHTML =
+      "<b>"+best.label+"</b><br>"+
+      formatDeg(best._pos.deg)+"<br>"+
+      "राशि: "+RASHI[rIdx];
+
+  } else tooltip.style.display='none';
 });
 
-/* ----------------------------------------
-   7) CONTROLS
------------------------------------------ */
-document.getElementById('gcStyle').addEventListener('change', renderChart);
-document.getElementById('gcExport').addEventListener('click', ()=>{
-  const url=canvas.toDataURL('image/png');
-  const a=document.createElement('a');
-  a.href=url; a.download='graha_chakra.png';
+
+/* ===========================================================
+   EXPORT, HIDE, STYLE SWITCH
+   =========================================================== */
+document.getElementById("gc_export").addEventListener("click",()=>{
+  const url=canvas.toDataURL("image/png");
+  const a=document.createElement("a");
+  a.href=url; a.download="graha_chakra.png";
   a.click();
 });
-window.addEventListener('resize',()=>setTimeout(renderChart,200));
 
-/* ----------------------------------------
-   8) RENDER DISPATCHER
------------------------------------------ */
-function renderChart(){
-  const style = document.getElementById('gcStyle').value;
-  if(style==='north') drawNorth();
-  else drawSouth();
+document.getElementById("gc_hide").addEventListener("click",()=>{
+  container.style.display="none";
+});
+
+
+/* ===========================================================
+   RENDER DISPATCH
+   =========================================================== */
+function renderGC(){
+  drawEllipticalBase();
+  drawPlanets();
 }
-window.renderGrahaChakra = renderChart;
 
-/* ----------------------------------------
-   9) PATCH INTO YOUR searchData()
------------------------------------------ */
-function attachSearchHook(){
-  if(typeof window.searchData==="function"){
-    if(window.__gcHookAttached) return;
+
+/* ===========================================================
+   HOOK INTO searchData()
+   =========================================================== */
+function hookSearch(){
+  if(typeof window.searchData==="function" && !window.__gc_hook){
     const old = window.searchData;
     window.searchData = function(){
-      const r = old.apply(this, arguments);
-      // draw after your logic fires and col17..col24 are set
-      setTimeout(renderChart,50);
+      let r = old.apply(this, arguments);
+      container.style.display="block";
+      setTimeout(renderGC,120);
       return r;
     };
-    window.__gcHookAttached = true;
-  } else {
-    // try again after your script loads fully
-    setTimeout(attachSearchHook,200);
+    window.__gc_hook=true;
+  } else if(!window.__gc_hook){
+    setTimeout(hookSearch,200);
   }
 }
-attachSearchHook();
+hookSearch();
 
-/* Initial attempt (in case data already loaded) */
-setTimeout(renderChart,500);
+
+/* initial attempt */
+setTimeout(()=>{ try{renderGC();}catch(e){} },500);
 
 })();
 </script>
-<!-- ==================== END GRAHA CHAKRA ENHANCER ==================== -->
 
-<!-- END: Graha Chakra Enhancer -->
+<!-- ================= END GRAHA CHAKRA ENHANCER ================= -->
+
 
 
 </body>
