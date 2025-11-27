@@ -5,11 +5,11 @@
 <title>सूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  body{margin-left: 25%; margin-right: 25%; text-align: center; font-size: larger; font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f5f7fa;align-content: center;font-weight: bolder;}
+  body{margin-left: 25%; margin-right: 25%; text-align: center; font-size: larger; font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f8f8f7;align-content: center;font-weight: bolder;}
   input,select,button{margin:6px 0;padding:8px;border:1px solid #ccc;border-radius:6px;}
   button{background:#007bff;color:#fff;cursor:pointer;}
   button:hover{background:#0056b3;}
-  #result{background:#fff;border-radius:10px;padding:20px;margin-top:20px;
+  #result{ background:#f9e0a6;border-radius:10px;padding:20px;margin-top:20px;
           box-shadow:0 0 10px rgba(0,0,0,0.1);}
   b{color:#007bff;}
 </style>
@@ -204,12 +204,12 @@ function searchData(){
 
 <div id="gc_container">
   <div id="gc_controls">
-    <select id="gc_style" class="gc_sel">
-      <option value="south">South Wheel</option>
-      <option value="north">North Box</option>
+    <select id="gc_style" class="gc_sel" style="display: none;">
+      <option value="south">चक्रम्</option>
+      <option value="north">वर्ग</option>
     </select>
-    <button id="gc_export" class="gc_btn">Export PNG</button>
-    <button id="gc_hide" class="gc_btn">Hide Chart</button>
+    <button id="gc_export" style="display: none;" class="gc_btn">Export PNG</button>
+    <button id="gc_hide" style="display: none;" class="gc_btn">Hide Chart</button>
   </div>
   <div id="gc_canvas_wrap">
     <canvas id="gc_canvas" width="900" height="900"></canvas>
@@ -262,7 +262,7 @@ function searchData(){
     };
 
     window.RASHI_NAMES = ['मेष','वृषभ','मिथुन','कर्क','सिंह','कन्या','तुला','वृश्चिक','धनु','मकर','कुम्भ','मीन'];
-    window.NAK_NAMES = ["अश्विनी","भरणी","कृतिका","रोहिणी","मृगशीर्ष","आर्द्रा","पुनर्वसू","पुष्य","आश्लेषा","मघा","पूर्वाफाल्गुनी","उत्तराफाल्गुनी","हस्त","चित्रा","स्वाती","विशाखा","अनुराधा","ज्येष्ठा","मूल","पूर्वाषाढ़ा","उत्तराषाढ़ा","श्रवण","धनिष्ठा","शतभिषा","पूर्वभाद्रपद","उत्तरभाद्रपद","रेवती"];
+    window.NAK_NAMES = ["अश्विनी","भरणी","कृतिका","रोहिणी","मृगशीरा","आर्द्रा","पुनर्वसू","पुष्य","आश्लेषा","मघा","पूर्वफाल्गुनी","उत्तरफाल्गुनी","हस्त","चित्रा","स्वाती","विशाखा","अनुराधा","ज्येष्ठा","मूल","पूर्वाषाढ़","उत्तराषाढ़","श्रवणा","धनिष्ठा","शतभिषा","पूर्वभाद्रपद","उत्तरभाद्रपद","रेवती"];
     window.GC_PLANETS = [
       {label:'सूर्य', col:17, color:'#f44336', glyph:'☉'},
       {label:'चन्द्र', col:18, color:'#90caf9', glyph:'☽'},
