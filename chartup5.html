@@ -197,7 +197,7 @@ function searchData(){
   }
   .gc_btn{
     padding:6px 10px;border:0;border-radius:6px;
-    background:#7b3f00;color:#fff;cursor:pointer;
+    background:#7b3f00;color:#f4eeee;cursor:pointer; 
   }
   .gc_sel{padding:6px;border-radius:6px}
 </style>
@@ -264,15 +264,15 @@ function searchData(){
     window.RASHI_NAMES = ['मेष','वृषभ','मिथुन','कर्क','सिंह','कन्या','तुला','वृश्चिक','धनु','मकर','कुम्भ','मीन'];
     window.NAK_NAMES = ["अश्विनी","भरणी","कृतिका","रोहिणी","मृगशीरा","आर्द्रा","पुनर्वसू","पुष्य","आश्लेषा","मघा","पूर्वफाल्गुनी","उत्तरफाल्गुनी","हस्त","चित्रा","स्वाती","विशाखा","अनुराधा","ज्येष्ठा","मूल","पूर्वाषाढ़","उत्तराषाढ़","श्रवणा","धनिष्ठा","शतभिषा","पूर्वभाद्रपद","उत्तरभाद्रपद","रेवती"];
     window.GC_PLANETS = [
-      {label:'सूर्य', col:17, color:'#f44336', glyph:'☉'},
+      {label:'सूर्य', col:17, color:'#8f0808', glyph:'☉'},
       {label:'चन्द्र', col:18, color:'#90caf9', glyph:'☽'},
-      {label:'मंगल', col:19, color:'#e57373', glyph:'♂'},
+      {label:'मंगल', col:19, color:'#e93e31', glyph:'♂'},
       {label:'बुध',   col:20, color:'#8bc34a', glyph:'☿'},
       {label:'गुरु',  col:21, color:'#ffeb3b', glyph:'♃'},
-      {label:'शुक्र', col:22, color:'#f06292', glyph:'♀'},
-      {label:'शनि',  col:23, color:'#455a64', glyph:'♄'},
-      {label:'केतु', col:24, color:'#6a1b9a', glyph:'☊'},
-      {label:'राहु', col:'RAHU', color:'#8d6e63', glyph:'☋'}  // NEW
+      {label:'शुक्र', col:22, color:'#ffff', glyph:'♀'},
+      {label:'शनि',  col:23, color:'#2724ef', glyph:'♄'},
+      {label:'केतु', col:24, color:'#0c0c0c', glyph:'☊'},
+      {label:'राहु', col:'RAHU', color:'#0c0c0c', glyph:'☋'}  // NEW
     ];
   }
 
@@ -512,15 +512,16 @@ function searchData(){
 
   // ---------- PLANETS: rays + markers on outer circle (0° at East) ----------
   const planets = window.GC_PLANETS || [
-    {label:'सूर्य', col:17, color:'#f44336'},
-    {label:'चन्द्र', col:18, color:'#90caf9'},
-    {label:'मंगल', col:19, color:'#e57373'},
-    {label:'बुध',   col:20, color:'#8bc34a'},
-    {label:'गुरु',  col:21, color:'#ffeb3b'},
-    {label:'शुक्र', col:22, color:'#f06292'},
-    {label:'शनि',  col:23, color:'#455a64'},
-    {label:'केतु', col:24, color:'#6a1b9a'}
-  ]; 
+      {label:'सूर्य', col:17, color:'#8f0808', glyph:'☉'},
+      {label:'चन्द्र', col:18, color:'#90caf9', glyph:'☽'},
+      {label:'मंगल', col:19, color:'#e93e31', glyph:'♂'},
+      {label:'बुध',   col:20, color:'#8bc34a', glyph:'☿'},
+      {label:'गुरु',  col:21, color:'#ffeb3b', glyph:'♃'},
+      {label:'शुक्र', col:22, color:'#ffff', glyph:'♀'},
+      {label:'शनि',  col:23, color:'#2724ef', glyph:'♄'},
+      {label:'केतु', col:24, color:'#0c0c0c', glyph:'☊'},
+      {label:'राहु', col:'RAHU', color:'#0c0c0c', glyph:'☋'}  // NEW
+    ]; 
 
   for(const p of planets){
 
