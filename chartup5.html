@@ -271,7 +271,8 @@ function searchData(){
       {label:'गुरु',  col:21, color:'#ffeb3b', glyph:'♃'},
       {label:'शुक्र', col:22, color:'#f06292', glyph:'♀'},
       {label:'शनि',  col:23, color:'#455a64', glyph:'♄'},
-      {label:'राहु', col:24, color:'#6a1b9a', glyph:'☊'}
+      {label:'केतु', col:24, color:'#6a1b9a', glyph:'☊'},
+      {label:'राहु', col:'RAHU', color:'#8d6e63', glyph:'☋'}  // NEW
     ];
   }
 
@@ -518,12 +519,29 @@ function searchData(){
     {label:'गुरु',  col:21, color:'#ffeb3b'},
     {label:'शुक्र', col:22, color:'#f06292'},
     {label:'शनि',  col:23, color:'#455a64'},
-    {label:'राहु', col:24, color:'#6a1b9a'}
-  ];
+    {label:'केतु', col:24, color:'#6a1b9a'}
+  ]; 
 
   for(const p of planets){
-    const raw = window['col'+p.col];
-    const deg = (typeof window.parseAngleGeneric === 'function') ? window.parseAngleGeneric(raw, p.col===17||p.col===18) : NaN;
+
+    let deg;
+
+    if(p.col === 'RAHU'){
+        // Compute Ketu = Rahu + 180 (wrap to 360)
+        const rahu_raw = window['col24'];
+        const rahu_deg = window.parseAngleGeneric(rahu_raw, true);
+        deg = (rahu_deg + 180) % 360;
+    }
+    else {
+        const raw = window['col'+p.col];
+        deg = window.parseAngleGeneric(raw, p.col===17 || p.col===18);
+    }
+
+    if(isNaN(deg)){
+        p._pos = null;
+        continue;
+    }
+
     if(isNaN(deg)){ p._pos=null; continue; }
     const a = (-deg) * Math.PI/180; // 0deg -> East, increasing anticlockwise
     const px = cx + R_outer * Math.cos(a);
