@@ -35,6 +35,15 @@ fetch("header.html")
 </script>
 </head>
 <body style="margin-left: 20%; margin-right: 20%;">
+  <div id="header"></div>
+
+<script>
+fetch("header.html")
+.then(response => response.text())
+.then(data => {
+  document.getElementById("header").innerHTML = data;
+});
+</script>
 
 <h1 style="text-align: center; font-size: larger;">सूर्यसिद्धान्तीय पञ्चाङ्गम् </h1>
 
