@@ -24,6 +24,15 @@
     border-radius: 8px;
   }
 </style>
+<div id="header"></div>
+
+<script>
+fetch("header.html")
+.then(response => response.text())
+.then(data => {
+  document.getElementById("header").innerHTML = data;
+});
+</script>
 </head>
 <body style="margin-left: 20%; margin-right: 20%;">
 
@@ -60,6 +69,7 @@
   <label style="font-size: larger;">आङ्ग्ल दिनाङ्क चुनें</label><br>
   <input type="date" style="font-size: larger;" id="datePicker" /><br><br>
   <button onclick="searchData()" style="font-size: larger;">पञ्चाङ्ग</button>
+  <button onclick="displayChakra()" style="font-size: larger;">चक्र देखें</button>
 </div>
 
 <h3 style="text-align: center; font-size: larger;">चयनित दिनाङ्क का पञ्चाङ्ग</h3>
@@ -184,13 +194,14 @@ function searchData(){
 
     
     out+=`<b>${name}:</b> <span id="${varName}">${val}</span><br>`;
-    document.getElementById("test").innerText = window.col3;
-   // document.getElementById("gcCtrl").style.display= "block";
-   // document.getElementById("gcWrap").style.display= "block";
+    //document.getElementById("test").innerText = window.col3;
 
   }
   
   resDiv.innerHTML=out;
+}
+function displayChakra(){
+  document.getElementById("gc_container").style.display= "block";
 }
 </script>
 
@@ -214,13 +225,13 @@ function searchData(){
   .gc_sel{padding:6px;border-radius:6px}
 </style>
 
-<div id="gc_container">
+<div id="gc_container" >
   <div id="gc_controls">
     <select id="gc_style" class="gc_sel" style="display: none;">
       <option value="south">चक्रम्</option>
       <option value="north">वर्ग</option>
     </select>
-    <button id="gc_export" style="display: none;" class="gc_btn">Export PNG</button>
+    <button id="gc_export"  class="gc_btn">Export PNG</button>
     <button id="gc_hide" style="display: none;" class="gc_btn">Hide Chart</button>
   </div>
   <div id="gc_canvas_wrap">
@@ -593,7 +604,9 @@ function searchData(){
       window.searchData = function(){
         const r = orig.apply(this, arguments);
         // small delay to let window.colN variables settle
-        setTimeout(()=>{ try{ document.getElementById('gc_container') && (document.getElementById('gc_container').style.display='block'); window.renderCircularChakra(); }catch(e){} }, 120);
+        setTimeout(()=>{ try{ 
+          //document.getElementById('gc_container') && (document.getElementById('gc_container').style.display='block'); 
+          window.renderCircularChakra(); }catch(e){} }, 120);
         return r;
       };
       window.__graha_circular_hooked = true;
@@ -607,6 +620,8 @@ function searchData(){
   setTimeout(()=>{ try{ if(window.col17!==undefined) window.renderCircularChakra(); }catch(e){} }, 600);
 
 })(); // end circular engine
+
+
 </script>
 
 
