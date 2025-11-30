@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Panchang — calibrated end moments</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+  body{font-family:system-ui, -apple-system, Roboto, "Segoe UI", Arial;max-width:1100px;margin:18px auto;padding:14px;}
+  label{display:block;margin-top:10px;font-weight:600;}
+  input,select,button,textarea{padding:8px;font-size:14px;margin-top:6px;width:100%;}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .card{padding:12px;border:1px solid #ddd;border-radius:8px;background:#fafafa;margin-top:12px}
+  pre{white-space:pre-wrap;background:#111;color:#eee;padding:12px;border-radius:8px;overflow:auto;max-height:300px}
+  .err{color:#c00;font-weight:700}
+  table{width:100%;border-collapse:collapse}
+  td,th{padding:6px;border:1px solid #eee}
+  small{color:#666}
+</style>
+<!-- libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+</head>
+<body>
+<h2>Panchang — with end-moment calibration</h2>
+<p>Load Excel, compute panchang as before. If computed end-moments differ from your expected values by a constant amount, use the calibration tool below to align outputs.</p>
+
+<label>Excel URL (Dropbox dl=1 recommended)
+<input id="xlsxUrl" value="https://dl.dropboxusercontent.com/scl/fi/am4is8p0ug31bvlyco1vf/grahspashta2026kashi.xlsx?rlkey=evisvceqe98rihawvnwmhc970&st=lq7cm2nv" />
+</label>
+
+<div class="row">
+  <button id="loadBtn">Load from URL</button>
+  <input id="fileInput" type="file" accept=".xls,.xlsx"/>
+  <div id="status" style="margin-left:8px"></div>
+</div>
+
+<div id="controls" class="card" style="display:none">
+  <div class="row">
+    <label style="flex:1">City
+      <select id="citySelect"></select>
+    </label>
+    <label style="flex:1">Date
+      <input id="dateInput" type="date"/>
+    </label>
+    <label style="flex:1">Time (optional)
+      <input id="timeInput" type="time"/>
+      <small>Leave empty = midnight local solar time.</small>
+    </label>
+  </div>
+
+  <div class="row">
+    <button id="computeBtn">Compute Panchang</button>
+    <button id="showTableBtn">Show parsed rows</button>
+  </div>
+</div>
+
+<div id="calibration" class="card" style="display:none">
+  <h3>Calibration / offset</h3>
+  <p>Use one of these methods to align end moments to your expected baseline:</p>
+  <ol>
+    <li>Manual offset — type the hh:mm:ss to add to all end-moments (positive → add).</li>
+    <li>Auto-calibrate — paste one or more pairs of (computed time, expected time) or simply paste expected times for the same date; the tool computes average offset and applies it.</li>
+  </ol>
+
+  <label>Manual offset (hh:mm:ss)
+    <input id="manualOffset" placeholder="e.g. 01:06:43" />
+  </label>
+  <div class="row">
+    <button id="applyManualOffsetBtn">Apply manual offset</button>
+    <button id="clearOffsetBtn">Clear offset</button>
+  </div>
+
+  <hr/>
+  <label>Auto-calibration — paste expected local times (one per line). Format examples:
+    <pre style="white-space:normal">Thu Feb 26 2026 24:32:28
+Thu Feb 26 2026 12:28:34
+Thu Feb 26 2026 13:39:55</pre>
+  </label>
+  <textarea id="expectedTimes" rows="5" placeholder="Paste your expected local times, one per line"></textarea>
+  <div class="row">
+    <button id="autoCalBtn">Auto-calibrate from pasted expected times</button>
+    <small id="autoCalMsg"></small>
+  </div>
+  <div><small>Current applied offset (ms): <code id="appliedOffsetMs">0</code> (use Clear to remove)</small></div>
+</div>
+
+<div id="outputCard" class="card" style="display:none">
+  <h3>Result</h3>
+  <div id="output"></div>
+</div>
+
+<div class="card">
+  <h3>Debug / Parsed Data</h3>
+  <pre id="debug"></pre>
+</div>
+
+<script>
+/* ---------- constants ---------- */
+const REF_LAT = 25.3109;
+const REF_LON = 83.0107;
+const SOLAR_OFFSET_HOURS = REF_LON / 15.0;
+const CITIES = [
+  {id:'K', name:'Kashi (Ref)', lat:25.3109, lon:83.0107},
+  {id:'V', name:'Varanasi', lat:25.3176, lon:82.9739},
+  {id:'L', name:'Lucknow', lat:26.8467, lon:80.9462}
+];
+
+/* ---------- small helpers ---------- */
+function setStatus(msg, isErr=false){ document.getElementById('status').innerHTML = isErr ? '<span class="err">'+msg+'</span>' : msg; if(isErr) console.error(msg); }
+function logDebug(msg){ const d=document.getElementById('debug'); d.textContent = new Date().toISOString() + ' — ' + msg + '\n\n' + d.textContent; console.log(msg); }
+function normalizeAngle(a){ a = Number(a); if(isNaN(a)) return NaN; a = a % 360; if(a < 0) a+=360; return a; }
+function angDiff(a,b){ let d = (a - b) % 360; if(d < -180) d += 360; if(d >= 180) d -= 360; return d; }
+function interpAngle(a1,t1,a2,t2,t){
+  a1 = normalizeAngle(a1); a2 = normalizeAngle(a2);
+  if(t2===t1) return a1;
+  const da = angDiff(a2,a1);
+  const frac = (t - t1) / (t2 - t1);
+  return normalizeAngle(a1 + da*frac);
+}
+
+/* ---------- parsing functions (exact as before) ---------- */
+function parseExcelDateToUTC(cell){
+  if(cell === null || cell === undefined) return null;
+  if(typeof cell === 'number'){
+    const epoch = Date.UTC(1899,11,30);
+    return new Date(epoch + cell * 24*3600*1000);
+  }
+  const s = String(cell).trim();
+  const m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+  if(m) { const d=parseInt(m[1]), mo=parseInt(m[2])-1, y=parseInt(m[3]); return new Date(Date.UTC(y,mo,d,0,0,0)); }
+  const p = Date.parse(s); if(!isNaN(p)) return new Date(p);
+  return null;
+}
+function parseRashiDMS(v){
+  if(v == null) return NaN;
+  const s = String(v).trim();
+  const parts = s.split(':');
+  if(parts.length < 2) return NaN;
+  const rashi = parseInt(parts[0],10);
+  const dms = parts.slice(1).join(':');
+  const m = dms.match(/(\d+)[°]\s*(\d+)[']\s*(\d+(?:\.\d+)?)/);
+  if(!m) return NaN;
+  const D=parseFloat(m[1]), M=parseFloat(m[2]), S=parseFloat(m[3]);
+  const inside = D + M/60 + S/3600;
+  return normalizeAngle(rashi*30 + inside);
+}
+function parseDMS(v){
+  if(v == null) return NaN;
+  const s = String(v).trim();
+  const m = s.match(/(\d+)[°]\s*(\d+)[']\s*(\d+(?:\.\d+)?)/);
+  if(!m) return NaN;
+  const D=parseFloat(m[1]), M=parseFloat(m[2]), S=parseFloat(m[3]);
+  return normalizeAngle(D + M/60 + S/3600);
+}
+
+/* ---------- table storage ---------- */
+let planetTable = []; // elements {rowIndex, dateUTC (ref solar), sun, moon, mars,...}
+let appliedOffsetMs = 0; // calibration offset in ms (added to each end-moment when displayed)
+
+/* ---------- load workbook ---------- */
+document.getElementById('loadBtn').addEventListener('click', ()=> loadFromUrl(document.getElementById('xlsxUrl').value.trim()));
+document.getElementById('fileInput').addEventListener('change', e=> loadFromFile(e.target.files[0]));
+function loadFromFile(f){
+  if(!f) return;
+  const fr = new FileReader();
+  fr.onload = ev => {
+    try{
+      const ab = ev.target.result;
+      const wb = XLSX.read(new Uint8Array(ab), {type:'array'});
+      processWorkbook(wb);
+    }catch(err){ setStatus('Parse error: '+err.message, true); }
+  };
+  fr.readAsArrayBuffer(f);
+}
+async function loadFromUrl(url){
+  if(!url) { setStatus('Enter URL', true); return; }
+  setStatus('Fetching...');
+  try{
+    if(url.includes('dropbox.com') && !url.includes('dl=1')) { url = url.replace(/(\?|&)dl=0/,'$1dl=1'); if(!url.includes('dl=1')) url += (url.includes('?') ? '&' : '?') + 'dl=1'; }
+    const resp = await fetch(url);
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const ab = await resp.arrayBuffer();
+    const wb = XLSX.read(new Uint8Array(ab), {type:'array'});
+    processWorkbook(wb);
+  }catch(err){ setStatus('Fetch error: '+err.message, true); console.error(err); }
+}
+
+function processWorkbook(wb){
+  planetTable = [];
+  const sheet = wb.SheetNames[0];
+  const arr = XLSX.utils.sheet_to_json(wb.Sheets[sheet], {header:1, defval:null});
+  for(let r=1;r<arr.length;r++){
+    const row = arr[r];
+    if(!row || !row[0]) continue;
+    const dateUTCmid = parseExcelDateToUTC(row[0]);
+    if(!dateUTCmid) { logDebug('skip row '+(r+1)+' date parse fail'); continue; }
+    // compute reference solar UTC instant for that date's midnight
+    const refSolarUTC = new Date(dateUTCmid.getTime() - SOLAR_OFFSET_HOURS*3600*1000);
+    planetTable.push({
+      rowIndex: r+1,
+      dateUTC: refSolarUTC,
+      sun: parseRashiDMS(row[1]),
+      moon: parseRashiDMS(row[2]),
+      mars: parseDMS(row[3]),
+      mercury: parseDMS(row[4]),
+      jupiter: parseDMS(row[5]),
+      venus: parseDMS(row[6]),
+      saturn: parseDMS(row[7]),
+      ketu: parseDMS(row[8])
+    });
+  }
+
+  planetTable.sort((a,b)=>a.dateUTC - b.dateUTC);
+  setStatus('Parsed rows: ' + planetTable.length);
+  logDebug('Sample:\n' + JSON.stringify(planetTable.slice(0,6).map(x=>({row:x.rowIndex, dateUTC:x.dateUTC.toISOString(), sun:x.sun, moon:x.moon})), null, 2));
+  // populate cities
+  const sel = document.getElementById('citySelect');
+  sel.innerHTML = '';
+  CITIES.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; sel.appendChild(o); });
+  document.getElementById('controls').style.display = 'block';
+  document.getElementById('calibration').style.display = 'block';
+}
+
+/* ---------- interpolation & bracketing ---------- */
+function findBracketByUTC(targetUTC){
+  if(!planetTable || planetTable.length < 2) return null;
+  if(targetUTC <= planetTable[0].dateUTC) return {i:0,j:1};
+  if(targetUTC >= planetTable[planetTable.length-1].dateUTC) return {i:planetTable.length-2, j:planetTable.length-1};
+  for(let i=0;i<planetTable.length-1;i++){
+    if(planetTable[i].dateUTC <= targetUTC && targetUTC <= planetTable[i+1].dateUTC) return {i:i,j:i+1};
+  }
+  return null;
+}
+function interpolateAtUTC(targetUTC){
+  const br = findBracketByUTC(targetUTC);
+  if(!br) return null;
+  const a = planetTable[br.i], b = planetTable[br.j];
+  const t1 = a.dateUTC.getTime(), t2 = b.dateUTC.getTime(), t = targetUTC.getTime();
+  return {
+    dateUTC: new Date(t),
+    sun: interpAngle(a.sun, t1, b.sun, t2, t),
+    moon: interpAngle(a.moon, t1, b.moon, t2, t),
+    mars: interpAngle(a.mars, t1, b.mars, t2, t),
+    mercury: interpAngle(a.mercury, t1, b.mercury, t2, t),
+    jupiter: interpAngle(a.jupiter, t1, b.jupiter, t2, t),
+    venus: interpAngle(a.venus, t1, b.venus, t2, t),
+    saturn: interpAngle(a.saturn, t1, b.saturn, t2, t),
+    ketu: interpAngle(a.ketu, t1, b.ketu, t2, t)
+  };
+}
+
+/* ---------- panchang math ---------- */
+function computeTithiFromAngles(sun,moon){
+  const diff = normalizeAngle(moon - sun);
+  const idx = Math.floor(diff/12);
+  return {index:idx, number: idx+1, angle: diff};
+}
+function computeNakshatraFromMoon(moon){
+  const idx = Math.floor(normalizeAngle(moon)/(360/27));
+  const fraction = (normalizeAngle(moon)/(360/27)) - idx;
+  return {index:idx, number: idx+1, fraction};
+}
+function computeYogFromAngles(sun,moon){
+  const idx = Math.floor(normalizeAngle(sun+moon)/(360/27));
+  return {index:idx, number: idx+1};
+}
+function computeKaranFromAngles(sun,moon){
+  const idx = Math.floor(normalizeAngle(moon - sun)/6);
+  return {index:idx, number: idx+1};
+}
+function computeRashiFromAngle(angle){
+  const idx = Math.floor(normalizeAngle(angle)/30);
+  const names=["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+  return {index:idx, number: idx+1, name: names[idx]};
+}
+
+/* ---------- end-moment search helpers ---------- */
+function findCrossingBetween(aAngles,bAngles,aTime,bTime, valueFunc, targetAngle){
+  const v1 = valueFunc(aAngles), v2 = valueFunc(bAngles);
+  const da = angDiff(v2, v1);
+  if(Math.abs(da) < 1e-9) return null;
+  const rel = angDiff(targetAngle, v1);
+  const frac = rel / da;
+  if(frac >= 0 && frac <= 1){
+    return new Date(aTime.getTime() + frac * (bTime.getTime() - aTime.getTime()));
+  }
+  return null;
+}
+function findEndMoment_Tithi(startUTC){
+  const start = interpolateAtUTC(startUTC); if(!start) return null;
+  const idx = Math.floor(normalizeAngle(start.moon - start.sun)/12);
+  const target = normalizeAngle((idx + 1) * 12);
+  for(let i=0;i<planetTable.length-1;i++){
+    if(planetTable[i+1].dateUTC <= startUTC) continue;
+    const a=planetTable[i], b=planetTable[i+1];
+    const t = findCrossingBetween({sun:a.sun,moon:a.moon},{sun:b.sun,moon:b.moon}, a.dateUTC, b.dateUTC, angObj => normalizeAngle(angObj.moon - angObj.sun), target);
+    if(t) return t;
+  }
+  return null;
+}
+function findEndMoment_Nakshatra(startUTC){
+  const start = interpolateAtUTC(startUTC); if(!start) return null;
+  const idx = Math.floor(normalizeAngle(start.moon)/(360/27));
+  const target = normalizeAngle((idx + 1) * (360/27));
+  for(let i=0;i<planetTable.length-1;i++){
+    if(planetTable[i+1].dateUTC <= startUTC) continue;
+    const a=planetTable[i], b=planetTable[i+1];
+    const t = findCrossingBetween({moon:a.moon},{moon:b.moon}, a.dateUTC, b.dateUTC, angObj => normalizeAngle(angObj.moon), target);
+    if(t) return t;
+  }
+  return null;
+}
+function findEndMoment_Yog(startUTC){
+  const start = interpolateAtUTC(startUTC); if(!start) return null;
+  const sum = normalizeAngle(start.sun + start.moon);
+  const idx = Math.floor(sum/(360/27));
+  const target = normalizeAngle((idx + 1) * (360/27));
+  for(let i=0;i<planetTable.length-1;i++){
+    if(planetTable[i+1].dateUTC <= startUTC) continue;
+    const a=planetTable[i], b=planetTable[i+1];
+    const t = findCrossingBetween({sun:a.sun,moon:a.moon},{sun:b.sun,moon:b.moon}, a.dateUTC, b.dateUTC, angObj => normalizeAngle(angObj.sun + angObj.moon), target);
+    if(t) return t;
+  }
+  return null;
+}
+function findEndMoment_Karan(startUTC){
+  const start = interpolateAtUTC(startUTC); if(!start) return null;
+  const diff = normalizeAngle(start.moon - start.sun);
+  const idx = Math.floor(diff/6);
+  const target = normalizeAngle((idx + 1) * 6);
+  for(let i=0;i<planetTable.length-1;i++){
+    if(planetTable[i+1].dateUTC <= startUTC) continue;
+    const a=planetTable[i], b=planetTable[i+1];
+    const t = findCrossingBetween({sun:a.sun,moon:a.moon},{sun:b.sun,moon:b.moon}, a.dateUTC, b.dateUTC, angObj => normalizeAngle(angObj.moon - angObj.sun), target);
+    if(t) return t;
+  }
+  return null;
+}
+function findEndMoment_MoonRashi(startUTC){
+  const start = interpolateAtUTC(startUTC); if(!start) return null;
+  const cur = Math.floor(normalizeAngle(start.moon)/30);
+  const target = normalizeAngle((cur+1) * 30);
+  for(let i=0;i<planetTable.length-1;i++){
+    if(planetTable[i+1].dateUTC <= startUTC) continue;
+    const a=planetTable[i], b=planetTable[i+1];
+    const t = findCrossingBetween({moon:a.moon},{moon:b.moon}, a.dateUTC, b.dateUTC, angObj => normalizeAngle(angObj.moon), target);
+    if(t) return t;
+  }
+  return null;
+}
+
+/* ---------- timezone / local display helpers ---------- */
+function utcToLocalSolar(utcDate, lon){
+  if(!utcDate) return null;
+  return new Date(utcDate.getTime() + (lon/15.0)*3600*1000);
+}
+
+/* ---------- main compute ---------- */
+document.getElementById('computeBtn').addEventListener('click', doCompute);
+function doCompute(){
+  if(!planetTable || planetTable.length < 2){ alert('Load workbook with at least 2 rows'); return; }
+  const cityId = document.getElementById('citySelect').value;
+  const city = CITIES.find(c=>c.id === cityId);
+  if(!city) { alert('Select city'); return; }
+  const dateStr = document.getElementById('dateInput').value;
+  if(!dateStr) { alert('Select date'); return; }
+  const timeStr = document.getElementById('timeInput').value;
+
+  const [Y,M,D] = dateStr.split('-').map(x=>+x);
+  // local solar midnight UTC for chosen city
+  const localMidUTC = new Date(Date.UTC(Y, M-1, D, 0,0,0) - (city.lon/15.0)*3600*1000);
+  let targetUTC = new Date(localMidUTC.getTime());
+  if(timeStr){
+    const [hh,mm] = timeStr.split(':').map(x=>+x);
+    targetUTC = new Date(localMidUTC.getTime() + hh*3600*1000 + mm*60*1000);
+  }
+
+  logDebug('Target UTC for interpolation: ' + targetUTC.toISOString());
+  const p = interpolateAtUTC(targetUTC);
+  if(!p){ setStatus('No interpolation available at that time', true); return; }
+
+  // compute panchang items
+  const sun = p.sun, moon = p.moon;
+  const tithi = computeTithiFromAngles(sun, moon);
+  const nak = computeNakshatraFromMoon(moon);
+  const yog = computeYogFromAngles(sun, moon);
+  const karan = computeKaranFromAngles(sun, moon);
+  const rashiMoon = computeRashiFromAngle(moon);
+  const rashiSun = computeRashiFromAngle(sun);
+
+  // find end moments (UTC)
+  const tithiEndUTC = findEndMoment_Tithi(targetUTC);
+  const nakEndUTC = findEndMoment_Nakshatra(targetUTC);
+  const yogEndUTC = findEndMoment_Yog(targetUTC);
+  const karanEndUTC = findEndMoment_Karan(targetUTC);
+  const moonRashiEndUTC = findEndMoment_MoonRashi(targetUTC);
+
+  // convert to local solar and apply calibration offset
+  function showLocal(utc){
+    if(!utc) return null;
+    const local = utcToLocalSolar(new Date(utc.getTime() + appliedOffsetMs), city.lon);
+    return local;
+  }
+
+  const tithiEndLocal = showLocal(tithiEndUTC);
+  const nakEndLocal = showLocal(nakEndUTC);
+  const yogEndLocal = showLocal(yogEndUTC);
+  const karanEndLocal = showLocal(karanEndUTC);
+  const moonRashiEndLocal = showLocal(moonRashiEndUTC);
+
+  // sunrise/sunset (SunCalc) display using local solar date
+  let sunTimes = null;
+  try{
+    const localForSun = utcToLocalSolar(targetUTC, city.lon);
+    sunTimes = SunCalc.getTimes(localForSun, city.lat, city.lon);
+    // apply offset to displayed times
+    if(sunTimes) {
+      for(const k in sunTimes) {
+        if(sunTimes[k] instanceof Date) sunTimes[k] = new Date(sunTimes[k].getTime() + appliedOffsetMs);
+      }
+    }
+  }catch(e){ sunTimes = null; }
+
+  // weekday local
+  const localForWeekday = utcToLocalSolar(targetUTC, city.lon);
+  const weekdayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const vaar = weekdayNames[localForWeekday.getUTCDay()];
+
+  const result = {
+    city, targetUTC, planets:p, sun, moon,
+    tithi, tithiEndUTC, tithiEndLocal,
+    nak, nakEndUTC, nakEndLocal,
+    yog, yogEndUTC, yogEndLocal,
+    karan, karanEndUTC, karanEndLocal,
+    rashiMoon, moonRashiEndUTC, moonRashiEndLocal,
+    rashiSun, vaar, sunTimes
+  };
+
+  window.lastPanchang = result;
+  window.surya = sun; window.chandra = moon;
+  window.tithi = tithi.number; window.nakshatra = nak.number; window.yog = yog.number;
+
+  // render display
+  const out = document.getElementById('output');
+  out.innerHTML = `
+    <div><strong>City:</strong> ${city.name}</div>
+    <div><strong>UTC used for interpolation:</strong> ${targetUTC.toISOString()}</div>
+    <hr/>
+    <div><strong>Sun:</strong> ${sun.toFixed(6)} | <strong>Moon:</strong> ${moon.toFixed(6)}</div>
+    <hr/>
+    <div><strong>Tithi #:</strong> ${tithi.number} (angle ${tithi.angle.toFixed(5)}°)</div>
+    <div><strong>Tithi end (local solar):</strong> ${tithiEndLocal ? tithiEndLocal.toString() : 'not found'}</div>
+    <div><strong>Nakshatra #:</strong> ${nak.number} (${(nak.fraction*100).toFixed(2)}%)</div>
+    <div><strong>Nakshatra end (local):</strong> ${nakEndLocal ? nakEndLocal.toString() : 'not found'}</div>
+    <div><strong>Karan #:</strong> ${karan.number}</div>
+    <div><strong>Karan end (local):</strong> ${karanEndLocal ? karanEndLocal.toString() : 'not found'}</div>
+    <div><strong>Yog #:</strong> ${yog.number}</div>
+    <div><strong>Yog end (local):</strong> ${yogEndLocal ? yogEndLocal.toString() : 'not found'}</div>
+    <div><strong>Moon Rashi:</strong> ${result.rashiMoon.name} (${result.rashiMoon.number})</div>
+    <div><strong>Moon Rashi end (local):</strong> ${moonRashiEndLocal ? moonRashiEndLocal.toString() : 'not found'}</div>
+    <div><strong>Vaar:</strong> ${vaar}</div>
+    <hr/>
+    <div><strong>Sunrise:</strong> ${sunTimes ? sunTimes.sunrise.toString() : 'n/a'}</div>
+    <div><strong>Sunset:</strong> ${sunTimes ? sunTimes.sunset.toString() : 'n/a'}</div>
+    <hr/>
+    <small>All data in <code>window.lastPanchang</code>. Applied offset (ms) = <code id="appliedOffsetMsInline">${appliedOffsetMs}</code></small>
+  `;
+  document.getElementById('outputCard').style.display = 'block';
+  document.getElementById('appliedOffsetMs').textContent = appliedOffsetMs;
+  setStatus('Computed (applied offset ms = ' + appliedOffsetMs + ')');
+}
+
+/* ---------- calibration UI actions ---------- */
+document.getElementById('applyManualOffsetBtn').addEventListener('click', ()=>{
+  const s = document.getElementById('manualOffset').value.trim();
+  if(!s){ alert('Enter hh:mm:ss'); return; }
+  const ms = parseHmsToMs(s);
+  appliedOffsetMs += ms;
+  document.getElementById('appliedOffsetMs').textContent = appliedOffsetMs;
+  document.getElementById('appliedOffsetMsInline').textContent = appliedOffsetMs;
+  setStatus('Applied manual offset: ' + s + ' (' + ms + ' ms)');
+});
+document.getElementById('clearOffsetBtn').addEventListener('click', ()=>{
+  appliedOffsetMs = 0;
+  document.getElementById('appliedOffsetMs').textContent = appliedOffsetMs;
+  document.getElementById('appliedOffsetMsInline').textContent = appliedOffsetMs;
+  setStatus('Cleared offset');
+});
+
+document.getElementById('autoCalBtn').addEventListener('click', ()=>{
+  const text = document.getElementById('expectedTimes').value.trim();
+  if(!text){ alert('Paste expected times lines'); return; }
+  // parse pasted expected local times; compute average delta between our currently-computed times and those expected
+  // We need to have computed outputs first (window.lastPanchang)
+  if(!window.lastPanchang){ alert('Compute panchang for the same date/time first so the tool can compare'); return; }
+  // accepted formats: many human formats. We'll attempt Date.parse on each line; if hour >=24 we support hh>=24 by adjusting day.
+  const lines = text.split('\n').map(l=>l.trim()).filter(l=>l);
+  const ourTimes = [
+    window.lastPanchang.tithiEndLocal,
+    window.lastPanchang.nakEndLocal,
+    window.lastPanchang.karanEndLocal,
+    window.lastPanchang.yogEndLocal,
+    window.lastPanchang.moonRashiEndLocal
+  ].filter(x=>x); // may be nulls
+  // We'll match lines to ourTimes by position (user should paste the ones that correspond to computed ones or order them)
+  const pairs = [];
+  for(let i=0;i<Math.min(lines.length, ourTimes.length); i++){
+    const expected = parsePossibly24Hour(lines[i]);
+    if(expected === null) continue;
+    const our = ourTimes[i];
+    if(!our) continue;
+    // Both expected and our are Date objects in local solar time zone representation (user pasted in same local tz)
+    const delta = expected.getTime() - our.getTime();
+    pairs.push(delta);
+  }
+  if(pairs.length === 0){ document.getElementById('autoCalMsg').textContent = 'No valid pairs parsed — ensure you paste expected times in readable format and compute first.'; return; }
+  // compute average delta
+  const avg = Math.round(pairs.reduce((a,b)=>a+b,0) / pairs.length);
+  appliedOffsetMs += avg;
+  document.getElementById('appliedOffsetMs').textContent = appliedOffsetMs;
+  document.getElementById('appliedOffsetMsInline').textContent = appliedOffsetMs;
+  document.getElementById('autoCalMsg').textContent = `Applied average offset ${msToHms(avg)} (${avg} ms) from ${pairs.length} pair(s).`;
+  setStatus('Auto-calibration applied: ' + msToHms(avg));
+});
+
+/* ---------- helpers for calibration parsing ---------- */
+function parseHmsToMs(s){
+  const parts = s.split(':').map(x=>+x);
+  if(parts.length === 3) return ((parts[0]*3600)+(parts[1]*60)+parts[2]) * 1000;
+  if(parts.length === 2) return ((parts[0]*3600)+(parts[1]*60)) * 1000;
+  if(parts.length === 1) return (parts[0]*3600)*1000;
+  return 0;
+}
+function msToHms(ms){
+  const sign = ms<0 ? '-' : '';
+  ms = Math.abs(ms);
+  const sTotal = Math.floor(ms/1000);
+  const hh = Math.floor(sTotal/3600);
+  const mm = Math.floor((sTotal%3600)/60);
+  const ss = sTotal%60;
+  return sign + String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+}
+// parse user pasted time; handle "24:32:28" by wrapping into next day
+function parsePossibly24Hour(line){
+  // Try Date.parse quickly
+  const p = Date.parse(line);
+  if(!isNaN(p)) return new Date(p);
+  // Try detect hh>=24 format like "Thu Feb 26 2026 24:32:28"
+  const m = line.match(/(\w+\s+\w+\s+\d+\s+\d+)\s+(\d{1,2}):(\d{2}):(\d{2})/);
+  if(m){
+    const datePart = m[1];
+    let hh = +m[2], mm = +m[3], ss = +m[4];
+    // build base date
+    const base = Date.parse(datePart);
+    if(isNaN(base)) return null;
+    let baseDate = new Date(base);
+    // If hh >= 24, add days accordingly
+    if(hh >= 24){
+      const extraDays = Math.floor(hh / 24);
+      hh = hh % 24;
+      baseDate = new Date(baseDate.getTime() + extraDays * 24*3600*1000);
+    }
+    baseDate.setHours(hh, mm, ss, 0);
+    return baseDate;
+  }
+  // last attempt: try to parse "YYYY-MM-DD HH:MM:SS"
+  const m2 = line.match(/(\d{4}-\d{2}-\d{2})\s+(\d{1,2}):(\d{2}):(\d{2})/);
+  if(m2){
+    const d = m2[1]; const hh = +m2[2], mm=+m2[3], ss=+m2[4];
+    const dt = new Date(d + 'T' + String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0'));
+    return isNaN(dt.getTime()) ? null : dt;
+  }
+  return null;
+}
+
+/* ---------- show parsed table ---------- */
+document.getElementById('showTableBtn').addEventListener('click', showParsedRows);
+function showParsedRows(){
+  if(!planetTable || planetTable.length===0){ alert('No parsed rows'); return; }
+  const rows = planetTable.slice(0,30);
+  let html = '<table><thead><tr><th>Row</th><th>refSolarUTC</th><th>Sun</th><th>Moon</th><th>Mars</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    html += `<tr><td>${r.rowIndex}</td><td>${r.dateUTC.toISOString()}</td><td>${isNaN(r.sun)?'NaN':r.sun.toFixed(6)}</td><td>${isNaN(r.moon)?'NaN':r.moon.toFixed(6)}</td><td>${isNaN(r.mars)?'NaN':r.mars.toFixed(6)}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('debug').innerHTML = html + '\n\n' + document.getElementById('debug').innerHTML;
+  setStatus('Shown parsed rows.');
+}
+
+/* ---------- init ---------- */
+(function(){ document.getElementById('controls').style.display='none'; document.getElementById('calibration').style.display='none'; setStatus('Ready. Load Excel.'); })();
+</script>
+</body>
+</html>

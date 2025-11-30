@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Panchang — Cubic (Hermite) interpolation</title>
+<style>
+  body{font-family:system-ui, -apple-system, Roboto, "Segoe UI", Arial;max-width:1100px;margin:18px auto;padding:14px;}
+  h1{margin:0 0 8px 0}
+  label{display:block;margin-top:10px;font-weight:600;}
+  select,input,button,textarea{padding:8px;font-size:14px;margin-top:6px;}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .card{padding:12px;border:1px solid #ddd;border-radius:8px;background:#fafafa;margin-top:12px}
+  pre{white-space:pre-wrap;background:#111;color:#eee;padding:12px;border-radius:8px;overflow:auto;max-height:320px}
+  .err{color:#c00;font-weight:700}
+  table{width:100%;border-collapse:collapse}
+  td,th{padding:6px;border:1px solid #eee}
+  small{color:#666}
+</style>
+
+<!-- SheetJS for .xlsx parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- SunCalc for sunrise/sunset (optional) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+</head>
+<body>
+<h1>Panchang — Hermite cubic interpolation</h1>
+<p>Excel format: A = date, B = time (IST). C,D = (rashi-1):deg:min:sec (Sun,Moon). E..J = deg:min:sec. Rahu = Ketu + 180. Results (end-moments) computed using Hermite cubic interpolation and root finding (bisection) for high accuracy.</p>
+
+<label>Excel URL (Dropbox direct-download recommended)
+  <input id="xlsxUrl" style="width:100%" value="https://dl.dropboxusercontent.com/scl/fi/atbhaoad1ddjb6pkijmcj/grahspashta2026kashi.xlsx?rlkey=mkxm0x9ci42f8yjku6cj2jtj5&st=sg3v2vax" />
+</label>
+
+<div class="row">
+  <button id="loadBtn">Load from URL</button>
+  <input id="fileInput" type="file" accept=".xls,.xlsx" />
+  <div id="status" style="margin-left:10px"></div>
+</div>
+
+<div id="controls" class="card" style="display:none">
+  <div class="row">
+    <label style="flex:1">City
+      <select id="citySelect"></select>
+    </label>
+    <label style="flex:1">Date
+      <input id="dateInput" type="date" />
+    </label>
+    <label style="flex:1">Time (optional)
+      <input id="timeInput" type="time" step="1" />
+      <small>Leave blank = midnight local (IST) for chosen date.</small>
+    </label>
+  </div>
+
+  <div class="row">
+    <button id="computeBtn">Compute Panchang</button>
+    <button id="showTableBtn">Show parsed rows</button>
+  </div>
+</div>
+
+<div id="outputCard" class="card" style="display:none">
+  <h3>Result (displayed in IST)</h3>
+  <div id="output"></div>
+</div>
+
+<div class="card">
+  <h3>Debug / Parsed</h3>
+  <div><strong>Reference:</strong> times in Excel are IST (UTC+05:30)</div>
+  <pre id="debug"></pre>
+</div>
+
+<script>
+/* ----------------- Configuration ----------------- */
+const IST_MS = 5.5 * 3600 * 1000;
+const CITIES = [
+  { id:'K', name:'Kashi (Ref)', lat:25.3109, lon:83.0107 },
+  { id:'V', name:'Varanasi', lat:25.3176, lon:82.9739 },
+  { id:'L', name:'Lucknow', lat:26.8467, lon:80.9462 }
+];
+
+/* ----------------- Helpers ----------------- */
+function setStatus(txt, isErr=false){ const s=document.getElementById('status'); s.innerHTML = isErr ? `<span class="err">${txt}</span>` : txt; if(isErr) console.error(txt); else console.log(txt); }
+function logDebug(msg){ const d=document.getElementById('debug'); d.textContent = new Date().toISOString() + ' — ' + msg + '\n\n' + d.textContent; console.log(msg); }
+function modulo360(x){ x = Number(x); if(isNaN(x)) return NaN; x = x % 360; if(x < 0) x += 360; return x; }
+
+/* Unwrap an angle value so it's continuous relative to prevValue (which may be outside 0..360) */
+function unwrapRelative(value360, prevUnwrapped){
+  let v = modulo360(value360);
+  // adjust by +/-360 until nearest to prevUnwrapped
+  if(prevUnwrapped === null || prevUnwrapped === undefined || isNaN(prevUnwrapped)) return v;
+  while(v - prevUnwrapped > 180) v -= 360;
+  while(v - prevUnwrapped < -180) v += 360;
+  return v;
+}
+
+/* ----------------- Parsers ----------------- */
+/* parse date dd-mm-yyyy or Excel serial -> JS Date UTC midnight */
+function parseExcelDate(cell){
+  if(cell === null || cell === undefined) return null;
+  if(typeof cell === 'number'){
+    const epoch = Date.UTC(1899,11,30);
+    return new Date(epoch + cell * 86400000);
+  }
+  const s = String(cell).trim();
+  const m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+  if(m){ const d=+m[1], mo=+m[2]-1, y=+m[3]; return new Date(Date.UTC(y, mo, d, 0,0,0)); }
+  const p = Date.parse(s);
+  if(!isNaN(p)) return new Date(p);
+  return null;
+}
+
+/* parse time "HH:MM" or "HH:MM:SS" */
+function parseTime(cell){
+  if(cell === null || cell === undefined) return null;
+  const s = String(cell).trim();
+  if(!s) return null;
+  const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if(m) return { h: +m[1], m: +m[2], s: m[3] ? +m[3] : 0 };
+  // try Date parse of time string
+  const p = Date.parse('1970-01-01T' + s);
+  if(!isNaN(p)){ const d = new Date(p); return { h: d.getUTCHours(), m: d.getUTCMinutes(), s: d.getUTCSeconds() }; }
+  return null;
+}
+
+/* parse C/D: (rashi-1):deg:min:sec or with symbols */
+function parseRashiMinus1_DMS(v){
+  if(v === null || v === undefined) return NaN;
+  const s = String(v).trim();
+  const norm = s.replace(/[°\u00B0]/g, ':').replace(/[\'"]/g, ':').replace(/\s+/g,'').replace(/::+/g,':');
+  const parts = norm.split(':').filter(p=>p!=='');
+  if(parts.length >= 4){
+    const r = +parts[0], D=+parts[1], M=+parts[2], S=+parts[3];
+    return modulo360(r * 30 + D + M/60 + S/3600);
+  }
+  const m = s.match(/^(\d+)[^\d]+(\d+)[^\d]+(\d+)[^\d]+(\d+(?:\.\d+)?)$/);
+  if(m){ const r=+m[1],D=+m[2],M=+m[3],S=+m[4]; return modulo360(r*30 + D + M/60 + S/3600); }
+  return NaN;
+}
+
+/* parse absolute DMS like 257:22:31.18 or with symbols */
+function parseAbsoluteDMS(v){
+  if(v === null || v === undefined) return NaN;
+  const s = String(v).trim();
+  const norm = s.replace(/[°\u00B0]/g, ':').replace(/[\'"]/g, ':').replace(/\s+/g,'').replace(/::+/g,':');
+  const parts = norm.split(':').filter(p=>p!=='');
+  if(parts.length >= 3){
+    const D=+parts[0], M=+parts[1], S=+parts[2];
+    return modulo360(D + M/60 + S/3600);
+  }
+  const m = s.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+(?:\.\d+)?)/);
+  if(m){ const D=+m[1],M=+m[2],S=+m[3]; return modulo360(D + M/60 + S/3600); }
+  return NaN;
+}
+
+/* ---------- Load & parse workbook ---------- */
+let planetTable = []; // rows { rowIndex, instantUTC, rawAngles: {sun,moon,mars,...}, unwrappedAngles:{sun,...} }
+let planetNames = ['sun','moon','mars','mercury','jupiter','venus','saturn','ketu','rahu'];
+
+document.getElementById('loadBtn').addEventListener('click', ()=> loadFromUrl(document.getElementById('xlsxUrl').value.trim()));
+document.getElementById('fileInput').addEventListener('change', e=> { if(e.target.files[0]) loadFromFile(e.target.files[0]); });
+
+async function loadFromUrl(url){
+  if(!url){ setStatus('Enter URL', true); return; }
+  setStatus('Fetching workbook...');
+  try{
+    if(url.includes('dropbox.com') && !url.includes('dl=1')) { url = url.replace(/(\?|&)dl=0/,'$1dl=1'); if(!url.includes('dl=1')) url += (url.includes('?') ? '&' : '?') + 'dl=1'; }
+    const resp = await fetch(url);
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const ab = await resp.arrayBuffer();
+    const wb = XLSX.read(new Uint8Array(ab), { type:'array' });
+    processWorkbook(wb);
+  }catch(err){ setStatus('Fetch/parse error: '+err.message, true); console.error(err); }
+}
+
+function loadFromFile(file){
+  const fr = new FileReader();
+  fr.onload = ev => {
+    try{
+      const ab = ev.target.result;
+      const wb = XLSX.read(new Uint8Array(ab), { type:'array' });
+      processWorkbook(wb);
+    }catch(err){ setStatus('File parse error: '+err.message, true); console.error(err); }
+  };
+  fr.readAsArrayBuffer(file);
+}
+
+function processWorkbook(wb){
+  planetTable = [];
+  const sheetName = wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  if(!ws){ setStatus('No sheet found', true); return; }
+  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:null });
+  setStatus('Parsing sheet: ' + sheetName + ' (rows=' + rows.length + ')');
+  for(let r=1; r<rows.length; r++){
+    const row = rows[r];
+    if(!row) continue;
+    const rawDate = row[0], rawTime = row[1];
+    const dateUTCmid = parseExcelDate(rawDate);
+    if(!dateUTCmid){ logDebug('Skipping row '+(r+1)+' date parse failed'); continue; }
+    const t = parseTime(rawTime) || { h:0, m:0, s:0 };
+    // Excel times are in IST: build instantUTC = Date.UTC(y,mo,day,h,m,s) - IST_MS
+    const Y = dateUTCmid.getUTCFullYear(), Mo = dateUTCmid.getUTCMonth(), D = dateUTCmid.getUTCDate();
+    const instantUTC = new Date(Date.UTC(Y,Mo,D,t.h,t.m,t.s) - IST_MS);
+
+    // Parse planets: C..J => indices 2..9
+    const sun = parseRashiMinus1_DMS(row[2]); // C
+    const moon = parseRashiMinus1_DMS(row[3]); // D
+    const mars = parseAbsoluteDMS(row[4]);    // E
+    const mercury = parseAbsoluteDMS(row[5]); // F
+    const jupiter = parseAbsoluteDMS(row[6]); // G
+    const venus = parseAbsoluteDMS(row[7]);   // H
+    const saturn = parseAbsoluteDMS(row[8]);  // I
+    const ketu = parseAbsoluteDMS(row[9]);    // J
+    const rahu = isNaN(ketu) ? NaN : modulo360(ketu + 180);
+
+    const rawAngles = { sun, moon, mars, mercury, jupiter, venus, saturn, ketu, rahu };
+    planetTable.push({ rowIndex: r+1, instantUTC, rawAngles, unwrappedAngles: {} });
+  }
+
+  if(planetTable.length < 3){
+    setStatus('Need at least 3 rows for cubic/hermite interpolation. Found: ' + planetTable.length, true);
+    return;
+  }
+
+  // sort by instantUTC
+  planetTable.sort((a,b)=>a.instantUTC - b.instantUTC);
+
+  // Build unwrapped continuous series for each planet
+  for(const name of planetNames){
+    let prev = null;
+    for(let i=0;i<planetTable.length;i++){
+      const v360 = planetTable[i].rawAngles[name];
+      const uw = unwrapRelative(v360, prev);
+      planetTable[i].unwrappedAngles[name] = uw;
+      prev = uw;
+    }
+  }
+
+  // Precompute slopes (deg per ms) for each planet at each index using centered diff; endpoints use forward/backward
+  // We'll store slopes in planetTable[i].slopes = {sun:..., ...}
+  for(let i=0;i<planetTable.length;i++){
+    planetTable[i].slopes = {};
+    for(const name of planetNames){
+      let slope = 0;
+      if(i === 0){
+        const t1 = planetTable[0].instantUTC.getTime(), t2 = planetTable[1].instantUTC.getTime();
+        slope = (planetTable[1].unwrappedAngles[name] - planetTable[0].unwrappedAngles[name]) / (t2 - t1);
+      } else if(i === planetTable.length - 1){
+        const n = planetTable.length;
+        const t1 = planetTable[n-2].instantUTC.getTime(), t2 = planetTable[n-1].instantUTC.getTime();
+        slope = (planetTable[n-1].unwrappedAngles[name] - planetTable[n-2].unwrappedAngles[name]) / (t2 - t1);
+      } else {
+        const tprev = planetTable[i-1].instantUTC.getTime(), tnext = planetTable[i+1].instantUTC.getTime();
+        slope = (planetTable[i+1].unwrappedAngles[name] - planetTable[i-1].unwrappedAngles[name]) / (tnext - tprev);
+      }
+      planetTable[i].slopes[name] = slope; // deg per ms
+    }
+  }
+
+  setStatus('Parsed rows: ' + planetTable.length + ' (prepared unwrapped series & slopes).');
+  logDebug('Sample: ' + JSON.stringify(planetTable.slice(0,5).map(x=>({row:x.rowIndex, t:x.instantUTC.toISOString(), sun:x.unwrappedAngles.sun.toFixed(6)})), null, 2));
+  populateCities();
+  document.getElementById('controls').style.display = 'block';
+}
+
+/* ----------------- Hermite cubic interpolation -----------------
+   For a planet value (unwrapped degrees) on segment i -> i+1:
+   p0 = y0, p1 = y1
+   m0 = slope0 (deg/ms), m1 = slope1 (deg/ms)
+   t in [t0,t1]; u = (t - t0) / (t1 - t0)
+   hermite basis:
+     h00 = 2u^3 - 3u^2 + 1
+     h10 = u^3 - 2u^2 + u
+     h01 = -2u^3 + 3u^2
+     h11 = u^3 - u^2
+   value(u) = h00*p0 + h10*(t1 - t0)*m0 + h01*p1 + h11*(t1 - t0)*m1
+-------------------------------------------------------------- */
+
+function hermiteValueOnSegment(name, segIndex, tms){
+  const a = planetTable[segIndex];
+  const b = planetTable[segIndex+1];
+  const t0 = a.instantUTC.getTime(), t1 = b.instantUTC.getTime();
+  if(t1 === t0) return a.unwrappedAngles[name];
+  const u = (tms - t0) / (t1 - t0);
+  const p0 = a.unwrappedAngles[name], p1 = b.unwrappedAngles[name];
+  const m0 = a.slopes[name], m1 = b.slopes[name];
+  const h00 = 2*u*u*u - 3*u*u + 1;
+  const h10 = u*u*u - 2*u*u + u;
+  const h01 = -2*u*u*u + 3*u*u;
+  const h11 = u*u*u - u*u;
+  const scale = (t1 - t0); // ms
+  return h00 * p0 + h10 * (scale * m0) + h01 * p1 + h11 * (scale * m1);
+}
+
+/* Wrapper to compute valueFn (like moon-sun) at time within a given segment */
+function valueOnSegmentForFunction(segIndex, tms, valueFn){
+  // valueFn is function(anglesObj) -> real angle (in degrees; use unwrapped values)
+  // build temp angles from hermite values for each planet needed by valueFn
+  const namesNeeded = valueFn._planets || planetNames; // if we attach metadata
+  const angles = {};
+  for(const nm of namesNeeded){
+    angles[nm] = hermiteValueOnSegment(nm, segIndex, tms);
+  }
+  return valueFn(angles);
+}
+
+/* ----------------- Root finding on a segment -----------------
+   We'll search u in [0,1] for f(u) = value(u) - targetU == 0
+   Use sampling (nSamples) to find sign changes then bisection refinement to ms tolerance.
+-------------------------------------------------------------- */
+
+function shiftTargetNearby(target360, referenceUnwrapped){
+  // shift the 0..360 target to the continuous branch near referenceUnwrapped
+  let t = modulo360(target360);
+  while(t - referenceUnwrapped > 180) t -= 360;
+  while(t - referenceUnwrapped < -180) t += 360;
+  return t;
+}
+
+/* Find root in segment for a given valueFn and targetAngle360 (0..360).
+   Returns Date object (UTC) if found, else null.
+*/
+function findRootInSegment(segIndex, valueFn, targetAngle360){
+  const a = planetTable[segIndex], b = planetTable[segIndex+1];
+  const t0 = a.instantUTC.getTime(), t1 = b.instantUTC.getTime();
+  const nSamples = 30; // sampling to detect sign changes (higher = safer)
+  // choose a reference value = value at t0
+  const refVal = valueOnSegmentForFunction(segIndex, t0, valueFn);
+  if(isNaN(refVal)) return null;
+  const targetU = shiftTargetNearby(targetAngle360, refVal);
+  // sample f at points
+  let prevU = 0, prevF = valueOnSegmentForFunction(segIndex, t0, valueFn) - targetU;
+  for(let s=1; s<=nSamples; s++){
+    const u = s / nSamples;
+    const tms = Math.round(t0 + u * (t1 - t0));
+    const f = valueOnSegmentForFunction(segIndex, tms, valueFn) - targetU;
+    if(Math.abs(f) < 1e-9){
+      return new Date(tms);
+    }
+    if(prevF === 0) return new Date(t0 + prevU * (t1 - t0));
+    if(prevF * f < 0){
+      // sign change between prevU and u -> bisection
+      let lo = prevU, hi = u, loF = prevF, hiF = f;
+      let iter = 0;
+      while((hi - lo) * (t1 - t0) > 1 && iter < 60){ // stop when <1 ms or iterations exhausted
+        const midU = (lo + hi) / 2;
+        const midT = Math.round(t0 + midU * (t1 - t0));
+        const midF = valueOnSegmentForFunction(segIndex, midT, valueFn) - targetU;
+        if(Math.abs(midF) < 1e-9) return new Date(midT);
+        if(midF * loF <= 0){
+          hi = midU; hiF = midF;
+        } else {
+          lo = midU; loF = midF;
+        }
+        iter++;
+      }
+      const finalT = Math.round(t0 + ((lo+hi)/2) * (t1 - t0));
+      return new Date(finalT);
+    }
+    prevU = u; prevF = f;
+  }
+  return null;
+}
+
+/* Search forward from a given UTC time for the next crossing (end moment) */
+function findNextCrossingFrom(startUTC, valueFn, targetAngle360){
+  const startMs = startUTC.getTime();
+  // find segment where start falls
+  let seg = null;
+  for(let i=0;i<planetTable.length-1;i++){
+    const t0 = planetTable[i].instantUTC.getTime(), t1 = planetTable[i+1].instantUTC.getTime();
+    if(startMs >= t0 && startMs <= t1){
+      seg = i; break;
+    }
+  }
+  if(seg === null){
+    // before first -> start at seg 0; after last -> no crossing
+    if(startMs <= planetTable[0].instantUTC.getTime()) seg = 0;
+    else return null;
+  }
+  // For the segment containing start, we should start sampling from start time (not t0)
+  for(let i=seg;i<planetTable.length-1;i++){
+    const segStartMs = Math.max(startMs, planetTable[i].instantUTC.getTime());
+    // if segStartMs is equal to segment end, skip
+    if(segStartMs >= planetTable[i+1].instantUTC.getTime()) continue;
+    // We need to adapt the sampling routine to start from segStartMs rather than t0.
+    // We'll temporarily treat the segment [segStartMs, t1] by mapping to u in [u0,1].
+    // Simplest: create a small wrapper sampling that uses t range [segStartMs, t1] but calls hermite with full seg index.
+    const found = findRootInSegmentStartingAt(i, segStartMs, valueFn, targetAngle360);
+    if(found) return found;
+  }
+  return null;
+}
+
+/* Find root in segment i but starting only from startMs (>= t0). */
+function findRootInSegmentStartingAt(segIndex, startMs, valueFn, targetAngle360){
+  const a = planetTable[segIndex], b = planetTable[segIndex+1];
+  const t0 = a.instantUTC.getTime(), t1 = b.instantUTC.getTime();
+  if(startMs >= t1) return null;
+  // compute refVal at startMs
+  const refVal = valueOnSegmentForFunction(segIndex, startMs, valueFn);
+  if(isNaN(refVal)) return null;
+  const targetU = shiftTargetNearby(targetAngle360, refVal);
+  // sample between startMs and t1
+  const nSamples = 24;
+  let prevT = startMs, prevF = refVal - targetU;
+  for(let s=1;s<=nSamples;s++){
+    const u = s / nSamples;
+    const tms = Math.round(startMs + u * (t1 - startMs));
+    const f = valueOnSegmentForFunction(segIndex, tms, valueFn) - targetU;
+    if(Math.abs(f) < 1e-9) return new Date(tms);
+    if(prevF * f < 0){
+      // bisection between prevT and tms
+      let lo = prevT, hi = tms, loF = prevF, hiF = f;
+      let iter = 0;
+      while(hi - lo > 1 && iter < 60){
+        const mid = Math.round((lo + hi) / 2);
+        const midF = valueOnSegmentForFunction(segIndex, mid, valueFn) - targetU;
+        if(Math.abs(midF) < 1e-9) return new Date(mid);
+        if(midF * loF <= 0){
+          hi = mid; hiF = midF;
+        } else {
+          lo = mid; loF = midF;
+        }
+        iter++;
+      }
+      return new Date(Math.round((lo+hi)/2));
+    }
+    prevT = tms; prevF = f;
+  }
+  return null;
+}
+
+/* ----------------- Panchang value functions ----------------- */
+/* Each function returns an angle in degrees (we will use unwrapped hermite values inside the solver)
+   We'll attach _planets metadata to indicate which planet names are needed.
+*/
+function val_tithi(angles){ return modulo360(angles.moon - angles.sun); }
+val_tithi._planets = ['moon','sun'];
+
+function val_nakshatra(angles){
+  return modulo360(angles.moon); // nakshatra uses moon absolute
+}
+val_nakshatra._planets = ['moon'];
+
+function val_yog(angles){ return modulo360(angles.sun + angles.moon); }
+val_yog._planets = ['sun','moon'];
+
+function val_karan(angles){ return modulo360(angles.moon - angles.sun); }
+val_karan._planets = ['moon','sun'];
+
+function val_moonRashi(angles){ return modulo360(angles.moon); }
+val_moonRashi._planets = ['moon'];
+
+/* ----------------- Top-level finders ----------------- */
+function findTithiEndAfter(startUTC){
+  // determine current tithi index at start, compute next boundary angle = (index+1)*12
+  const startMs = startUTC.getTime();
+  // get interpolated current moon & sun using hermite: find segment that contains startUTC
+  const seg = locateSegmentForTime(startMs);
+  if(seg === null) return null;
+  const curVal = valueOnSegmentForFunction(seg, startMs, val_tithi);
+  const curIdx = Math.floor(modulo360(curVal) / 12);
+  const target = modulo360((curIdx + 1) * 12);
+  return findNextCrossingFrom(startUTC, val_tithi, target);
+}
+function findNakshatraEndAfter(startUTC){
+  const seg = locateSegmentForTime(startUTC.getTime());
+  if(seg === null) return null;
+  const curVal = valueOnSegmentForFunction(seg, startUTC.getTime(), val_nakshatra);
+  const curIdx = Math.floor(modulo360(curVal) / (360/27));
+  const target = modulo360((curIdx + 1) * (360/27));
+  return findNextCrossingFrom(startUTC, val_nakshatra, target);
+}
+function findYogEndAfter(startUTC){
+  const seg = locateSegmentForTime(startUTC.getTime());
+  if(seg === null) return null;
+  const curVal = valueOnSegmentForFunction(seg, startUTC.getTime(), val_yog);
+  const curIdx = Math.floor(modulo360(curVal) / (360/27));
+  const target = modulo360((curIdx + 1) * (360/27));
+  return findNextCrossingFrom(startUTC, val_yog, target);
+}
+function findKaranEndAfter(startUTC){
+  const seg = locateSegmentForTime(startUTC.getTime());
+  if(seg === null) return null;
+  const curVal = valueOnSegmentForFunction(seg, startUTC.getTime(), val_karan);
+  const curIdx = Math.floor(modulo360(curVal) / 6);
+  const target = modulo360((curIdx + 1) * 6);
+  return findNextCrossingFrom(startUTC, val_karan, target);
+}
+function findMoonRashiEndAfter(startUTC){
+  const seg = locateSegmentForTime(startUTC.getTime());
+  if(seg === null) return null;
+  const curVal = valueOnSegmentForFunction(seg, startUTC.getTime(), val_moonRashi);
+  const curIdx = Math.floor(modulo360(curVal) / 30);
+  const target = modulo360((curIdx + 1) * 30);
+  return findNextCrossingFrom(startUTC, val_moonRashi, target);
+}
+
+/* locate segment index i such that t in [t_i, t_{i+1}] */
+function locateSegmentForTime(tms){
+  if(!planetTable || planetTable.length < 2) return null;
+  if(tms <= planetTable[0].instantUTC.getTime()) return 0;
+  for(let i=0;i<planetTable.length-1;i++){
+    const t0 = planetTable[i].instantUTC.getTime(), t1 = planetTable[i+1].instantUTC.getTime();
+    if(tms >= t0 && tms <= t1) return i;
+  }
+  // after last -> return null
+  return null;
+}
+
+/* ----------------- UI actions ----------------- */
+function populateCities(){
+  const sel = document.getElementById('citySelect'); sel.innerHTML = '';
+  CITIES.forEach(c => { const o=document.createElement('option'); o.value=c.id; o.textContent = c.name + ` (${c.lat}, ${c.lon})`; sel.appendChild(o); });
+}
+
+document.getElementById('computeBtn').addEventListener('click', onCompute);
+document.getElementById('showTableBtn').addEventListener('click', showTable);
+document.getElementById('loadBtn').addEventListener('click', ()=> loadFromUrl(document.getElementById('xlsxUrl').value.trim()));
+
+function onCompute(){
+  try{
+    if(!planetTable || planetTable.length < 3){ alert('Load a workbook with at least 3 rows'); return; }
+    const cityId = document.getElementById('citySelect').value;
+    const city = CITIES.find(c=>c.id === cityId);
+    if(!city){ alert('Select city'); return; }
+    const dateStr = document.getElementById('dateInput').value;
+    if(!dateStr){ alert('Select date'); return; }
+    const timeStr = document.getElementById('timeInput').value;
+    const [Y,M,D] = dateStr.split('-').map(x=>+x);
+    let hh=0, mm=0, ss=0;
+    if(timeStr){
+      const p = timeStr.split(':'); hh=+p[0]; mm=+p[1]; ss = p[2] ? +p[2] : 0;
+    }
+    // Selected local civil time is IST => selectedUTC = Date.UTC(...) - IST_MS
+    const selectedUTC = new Date(Date.UTC(Y, M-1, D, hh, mm, ss) - IST_MS);
+    logDebug('Selected UTC instant: ' + selectedUTC.toISOString());
+
+    // Interpolate planetary longitudes at selectedUTC using hermite
+    const seg = locateSegmentForTime(selectedUTC.getTime());
+    if(seg === null){ setStatus('Selected time outside table range', true); return; }
+
+    // produce hermite values for display (wrap back to 0..360 for display)
+    const hermiteAngles = {};
+    for(const nm of planetNames) hermiteAngles[nm] = modulo360( hermiteValueOnSegment(nm, seg, selectedUTC.getTime()) );
+
+    // compute panchang basics using hermite values at selectedUTC
+    const sun = hermiteAngles.sun, moon = hermiteAngles.moon;
+    const tithiAngle = modulo360(moon - sun);
+    const tithiIndex = Math.floor(tithiAngle / 12);
+    const nakIdx = Math.floor(modulo360(moon) / (360/27));
+    const yogIdx = Math.floor(modulo360(sun + moon) / (360/27));
+    const karanIdx = Math.floor(tithiAngle / 6);
+    const rashiMoon = Math.floor(modulo360(moon) / 30);
+
+    // find end moments (UTC) using cubic solver searching forward
+    const tithiEndUTC = findTithiEndAfter(selectedUTC);
+    const nakEndUTC = findNakshatraEndAfter(selectedUTC);
+    const yogEndUTC = findYogEndAfter(selectedUTC);
+    const karanEndUTC = findKaranEndAfter(selectedUTC);
+    const moonRashiEndUTC = findMoonRashiEndAfter(selectedUTC);
+
+    // Convert to IST for display
+    function toIST(dt){ return dt ? new Date(dt.getTime() + IST_MS) : null; }
+
+    const res = {
+      city, selectedUTC,
+      hermiteAngles,
+      sun, moon,
+      tithi: { index: tithiIndex, number: tithiIndex+1, angle: tithiAngle },
+      tithiEndUTC, tithiEndIST: toIST(tithiEndUTC),
+      nak: { index: nakIdx, number: nakIdx+1 }, nakEndUTC, nakEndIST: toIST(nakEndUTC),
+      yog: { index: yogIdx, number: yogIdx+1 }, yogEndUTC, yogEndIST: toIST(yogEndUTC),
+      karan: { index: karanIdx, number: karanIdx+1 }, karanEndUTC, karanEndIST: toIST(karanEndUTC),
+      rashiMoon: { index: rashiMoon, number: rashiMoon+1 }, moonRashiEndUTC, moonRashiEndIST: toIST(moonRashiEndUTC)
+    };
+
+    window.lastPanchang = res;
+    window.surya = res.sun; window.chandra = res.moon;
+    window.tithi = res.tithi.number; window.nakshatra = res.nak.number; window.yog = res.yog.number;
+
+    // sunrise/sunset (approx) using SunCalc at local IST date/time (we use selectedUTC -> IST)
+    let sunTimes = null;
+    try{
+      const istDate = toIST(selectedUTC);
+      sunTimes = SunCalc.getTimes(istDate, city.lat, city.lon);
+      // convert sunTimes to IST for display
+      for(const k in sunTimes){ if(sunTimes[k] instanceof Date) sunTimes[k] = new Date(sunTimes[k].getTime() + IST_MS); }
+    }catch(e){ sunTimes = null; }
+
+    // weekday in IST
+    const weekdayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const weekday = weekdayNames[toIST(selectedUTC).getUTCDay()];
+
+    // render
+    const out = document.getElementById('output');
+    out.innerHTML = `
+      <div><strong>City:</strong> ${city.name}</div>
+      <div><strong>Selected UTC:</strong> ${selectedUTC.toISOString()} (displayed times below are IST)</div>
+      <hr/>
+      <div><strong>Planet longitudes (deg)</strong></div>
+      <div>Sun: ${res.sun.toFixed(6)} | Moon: ${res.moon.toFixed(6)}</div>
+      <div>Mars: ${res.hermiteAngles.mars.toFixed(6)} | Mercury: ${res.hermiteAngles.mercury.toFixed(6)}</div>
+      <div>Jupiter: ${res.hermiteAngles.jupiter.toFixed(6)} | Venus: ${res.hermiteAngles.venus.toFixed(6)}</div>
+      <div>Saturn: ${res.hermiteAngles.saturn.toFixed(6)} | Ketu: ${res.hermiteAngles.ketu.toFixed(6)} | Rahu: ${res.hermiteAngles.rahu.toFixed(6)}</div>
+      <hr/>
+      <div><strong>Tithi #:</strong> ${res.tithi.number} (angle ${res.tithi.angle.toFixed(5)}°)</div>
+      <div><strong>Tithi end (IST):</strong> ${res.tithiEndIST ? res.tithiEndIST.toString() : 'not found'}</div>
+      <div><strong>Nakshatra #:</strong> ${res.nak.number}</div>
+      <div><strong>Nakshatra end (IST):</strong> ${res.nakEndIST ? res.nakEndIST.toString() : 'not found'}</div>
+      <div><strong>Karan #:</strong> ${res.karan.number}</div>
+      <div><strong>Karan end (IST):</strong> ${res.karanEndIST ? res.karanEndIST.toString() : 'not found'}</div>
+      <div><strong>Yog #:</strong> ${res.yog.number}</div>
+      <div><strong>Yog end (IST):</strong> ${res.yogEndIST ? res.yogEndIST.toString() : 'not found'}</div>
+      <div><strong>Moon Rashi:</strong> ${res.rashiMoon.number}</div>
+      <div><strong>Moon Rashi end (IST):</strong> ${res.moonRashiEndIST ? res.moonRashiEndIST.toString() : 'not found'}</div>
+      <div><strong>Vaar (weekday):</strong> ${weekday}</div>
+      <hr/>
+      <div><strong>Sunrise (IST):</strong> ${sunTimes ? sunTimes.sunrise.toString() : 'n/a'}</div>
+      <div><strong>Sunset (IST):</strong> ${sunTimes ? sunTimes.sunset.toString() : 'n/a'}</div>
+      <hr/>
+      <small>All data available in <code>window.lastPanchang</code>. Inspect for raw hermite arrays or override interpolation if needed.</small>
+    `;
+    document.getElementById('outputCard').style.display = 'block';
+    setStatus('Computed using Hermite cubic interpolation.');
+  }catch(err){
+    setStatus('Error: ' + err.message, true);
+    console.error(err);
+  }
+}
+
+function showTable(){
+  if(!planetTable || planetTable.length === 0){ alert('No parsed table'); return; }
+  let html = '<table><thead><tr><th>Row</th><th>InstantUTC</th><th>Sun(unwrapped)</th><th>Moon(unwrapped)</th></tr></thead><tbody>';
+  planetTable.forEach(r => {
+    html += `<tr><td>${r.rowIndex}</td><td>${r.instantUTC.toISOString()}</td><td>${r.unwrappedAngles.sun.toFixed(6)}</td><td>${r.unwrappedAngles.moon.toFixed(6)}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('debug').innerHTML = html + '\n\n' + document.getElementById('debug').innerHTML;
+  setStatus('Shown parsed rows.');
+}
+
+/* initialize */
+(function init(){ document.getElementById('controls').style.display = 'none'; document.getElementById('outputCard').style.display = 'none'; setStatus('Ready — load workbook'); })();
+</script>
+</body>
+</html>
