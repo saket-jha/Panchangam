@@ -40,6 +40,53 @@ document.addEventListener("DOMContentLoaded", function () {
     .nav.show {display:flex;}
     .menu-toggle {display:block;}
   }
+    /* DROPDOWN MENU */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropbtn {
+  cursor: pointer;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #1c1c3c;
+  min-width: 170px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  z-index: 999;
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 10px;
+  color: white;
+  text-decoration: none;
+}
+
+.dropdown-content a:hover {
+  background-color: rgba(255,255,255,0.2);
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* MOBILE FIX */
+@media(max-width:768px) {
+  .dropdown-content {
+    position: static;
+    box-shadow: none;
+  }
+}
+  .home-btn {
+  font-size: 20px;
+}
+
+
+
   body {margin:0; overflow-x:hidden;}
   table, canvas, svg {max-width:100%;}
   </style>
@@ -48,10 +95,14 @@ document.addEventListener("DOMContentLoaded", function () {
     <div class="logo">पञ्चाङ्गम्</div>
     <div class="menu-toggle" onclick="document.getElementById('nav').classList.toggle('show')">☰</div>
     <nav class="nav" id="nav">
-      <a href="index.html">Home</a>
-      <a href="Gen1.html">Gen1</a>
-      <a href="gen2.html">Gen2</a>
-      <a href="chartupdated.html">Charts</a>
+      <a href="index.html" class="home-btn" title="Home">🏠Home</a>
+
+      <div class="dropdown">
+  <a href="#" class="dropbtn">पञ्चाङ्गम्▾</a>
+  <div class="dropdown-content">
+    <a href="chartup5.html">चक्र सहित</a>
+    <a href="GovindJiStyle.html">साधारण</a>
+  </div>
       <a href="GovindJiStyle.html">GovindJi</a>
     </nav>
   </header>

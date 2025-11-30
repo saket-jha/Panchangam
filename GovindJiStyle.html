@@ -2,10 +2,12 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
+<script src="header.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>सूर्यसिद्धान्तीय पञ्चाङ्गम्</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  body{margin-left: 25%; margin-right: 25%; font-size: larger; text-align: center;  font-family:'Noto Sans Devanagari',Arial,sans-serif;background:#f7f9fc;padding:24px;}
+  body{font-size: larger; text-align: center;  font-family:'Noto Sans Devanagari',Arial,sans-serif;background:#f7f9fc;padding:24px;}
   h2{color:#0a66c2}
   label{font-weight:600}
   input,select,button{padding:8px;margin:6px 0;border-radius:6px;border:1px solid #ccc}
@@ -24,8 +26,24 @@
 <select id="fileLink">
   <option value="">-- स्थान --</option>
   <!-- replace with your actual Dropbox link if needed -->
-  <option value="https://dl.dropboxusercontent.com/scl/fi/sm2li2jedmf7wyhj8ttiq/Kashi.xlsx?rlkey=d3pzcjlrsd2pazsqf8byrbyd8&st=viv5sh1t">
+   <option value="">स्थान चुनें</option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/f0wbxmv8o980slrf9tu78/kashi2026.xlsx?rlkey=rcg3wqkgtr5h96eagaq9lrhsr&st=9qdszwtc">
     काशी
+  </option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/0bqwm2tujar29lx3lojkk/Jammu2026.xlsx?rlkey=zh2ilevfrdcyg0eav0xitcr58&st=861magrj">
+    जम्मू
+  </option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/pfs2i8vwidu9ae30a74ge/Jaipur2026.xlsx?rlkey=zgnab4o66ualfuv0z10mxf3ef&st=8od76qgz">
+    जयपुर
+  </option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/80ko4l0ahvm5pfyzbcubi/Darbhanga2026.xlsx?rlkey=pjb5cffap0t0ysy2b244361co&st=5cbwkijc&dl=0">
+    दरभङ्गा
+  </option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/14dto41n2vzhw7x6qio60/NewDelhi2026.xlsx?rlkey=ktm6wgjgpykq2g50mz0oi8m9r&st=xtvigu8y">
+    नई दिल्ली
+  </option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/vujop3gfrrvvb9ym4mrcc/Ludhiana2026.xlsx?rlkey=jwgiee421mbdijv25xpx6p5rd&st=6gss7hi5">
+    लुधियाना
   </option>
 </select><br>
 <button onclick="loadFile()">पुष्टि करें</button>

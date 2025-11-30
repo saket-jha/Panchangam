@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="header.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>सूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  body{margin-left: 25%; margin-right: 25%; text-align: center; font-size: larger; font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f5f7fa;align-content: center;font-weight: bolder;}
+  body{ text-align: center; font-size: larger; font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f5f7fa;align-content: center;font-weight: bolder;}
   input,select,button{margin:6px 0;padding:8px;border:1px solid #ccc;border-radius:6px;}
   button{background:#007bff;color:#fff;cursor:pointer;}
   button:hover{background:#0056b3;}
@@ -25,7 +27,7 @@
   }
 </style>
 </head>
-<body style="margin-left: 20%; margin-right: 20%;">
+<body >
 
 <h1 style="text-align: center; font-size: larger;">सूर्यसिद्धान्तीय पञ्चाङ्गम् </h1>
 
@@ -33,12 +35,24 @@
 <input type="file" id="excelFile" style="font-size:xx-small; display: none;" accept=".xlsx,.xls" /><br>
 
 <select id="fileLink">
-  <option value="">स्थान चुनें</option>
-  <option value="https://dl.dropboxusercontent.com/scl/fi/sm2li2jedmf7wyhj8ttiq/Kashi.xlsx?rlkey=d3pzcjlrsd2pazsqf8byrbyd8&st=viv5sh1t">
+   <option value="">स्थान चुनें</option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/f0wbxmv8o980slrf9tu78/kashi2026.xlsx?rlkey=rcg3wqkgtr5h96eagaq9lrhsr&st=9qdszwtc">
     काशी
   </option>
-  <option value="https://dl.dropboxusercontent.com/scl/fi/foystnbeaarsjoe2wth6d/.xlsx?rlkey=mm9i9gecfwtyacn2s4cfsnicx&st=nfm45zkt&st=kqv17s3q">
+  <option value="https://dl.dropboxusercontent.com/scl/fi/0bqwm2tujar29lx3lojkk/Jammu2026.xlsx?rlkey=zh2ilevfrdcyg0eav0xitcr58&st=861magrj">
+    जम्मू
+  </option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/pfs2i8vwidu9ae30a74ge/Jaipur2026.xlsx?rlkey=zgnab4o66ualfuv0z10mxf3ef&st=8od76qgz">
     जयपुर
+  </option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/80ko4l0ahvm5pfyzbcubi/Darbhanga2026.xlsx?rlkey=pjb5cffap0t0ysy2b244361co&st=5cbwkijc&dl=0">
+    दरभङ्गा
+  </option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/14dto41n2vzhw7x6qio60/NewDelhi2026.xlsx?rlkey=ktm6wgjgpykq2g50mz0oi8m9r&st=xtvigu8y">
+    नई दिल्ली
+  </option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/vujop3gfrrvvb9ym4mrcc/Ludhiana2026.xlsx?rlkey=jwgiee421mbdijv25xpx6p5rd&st=6gss7hi5">
+    लुधियाना
   </option>
 </select><br><br>
 
