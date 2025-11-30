@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="header.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>सूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -24,15 +26,6 @@
     border-radius: 8px;
   }
 </style>
-<div id="header"></div>
-
-<script>
-fetch("header.html")
-.then(response => response.text())
-.then(data => {
-  document.getElementById("header").innerHTML = data;
-});
-</script>
 </head>
 <body style="margin-left: 20%; margin-right: 20%;">
   <div id="header"></div>
