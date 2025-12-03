@@ -36,22 +36,22 @@
 
 <select id="fileLink">
   <option value="">स्थान चुनें</option>
-  <option value="https://dl.dropboxusercontent.com/scl/fi/f0wbxmv8o980slrf9tu78/kashi2026.xlsx?rlkey=rcg3wqkgtr5h96eagaq9lrhsr&st=9qdszwtc">
+  <option value="https://dl.dropboxusercontent.com/scl/fi/f0wbxmv8o980slrf9tu78/kashi2026.xlsx?rlkey=rcg3wqkgtr5h96eagaq9lrhsr&st=9qdszwtc" data-lat="25.3176" data-lon="82.9739">
     काशी
   </option>
-  <option value="https://dl.dropboxusercontent.com/scl/fi/0bqwm2tujar29lx3lojkk/Jammu2026.xlsx?rlkey=zh2ilevfrdcyg0eav0xitcr58&st=861magrj">
+  <option value="https://dl.dropboxusercontent.com/scl/fi/0bqwm2tujar29lx3lojkk/Jammu2026.xlsx?rlkey=zh2ilevfrdcyg0eav0xitcr58&st=861magrj" data-lat="32.7500" data-lon="74.8333">
     जम्मू
   </option>
-  <option value="https://dl.dropboxusercontent.com/scl/fi/pfs2i8vwidu9ae30a74ge/Jaipur2026.xlsx?rlkey=zgnab4o66ualfuv0z10mxf3ef&st=8od76qgz">
+  <option value="https://dl.dropboxusercontent.com/scl/fi/pfs2i8vwidu9ae30a74ge/Jaipur2026.xlsx?rlkey=zgnab4o66ualfuv0z10mxf3ef&st=8od76qgz" data-lat="27.0000" data-lon="76.0000">
     जयपुर
   </option>
-  <option value="https://dl.dropboxusercontent.com/scl/fi/80ko4l0ahvm5pfyzbcubi/Darbhanga2026.xlsx?rlkey=pjb5cffap0t0ysy2b244361co&st=5cbwkijc&dl=0">
+  <option value="https://dl.dropboxusercontent.com/scl/fi/80ko4l0ahvm5pfyzbcubi/Darbhanga2026.xlsx?rlkey=pjb5cffap0t0ysy2b244361co&st=5cbwkijc" data-lat="26.0000" data-lon="86.0000">
     दरभङ्गा
   </option>
-  <option value="https://dl.dropboxusercontent.com/scl/fi/14dto41n2vzhw7x6qio60/NewDelhi2026.xlsx?rlkey=ktm6wgjgpykq2g50mz0oi8m9r&st=xtvigu8y">
+  <option value="https://dl.dropboxusercontent.com/scl/fi/14dto41n2vzhw7x6qio60/NewDelhi2026.xlsx?rlkey=ktm6wgjgpykq2g50mz0oi8m9r&st=xtvigu8y" data-lat="28.6000" data-lon="77.2000">
     नई दिल्ली
   </option>
-  <option value="https://dl.dropboxusercontent.com/scl/fi/vujop3gfrrvvb9ym4mrcc/Ludhiana2026.xlsx?rlkey=jwgiee421mbdijv25xpx6p5rd&st=6gss7hi5">
+  <option value="https://dl.dropboxusercontent.com/scl/fi/vujop3gfrrvvb9ym4mrcc/Ludhiana2026.xlsx?rlkey=jwgiee421mbdijv25xpx6p5rd&st=6gss7hi5" data-lat="30.8833" data-lon="75.8500">
     लुधियाना
   </option>
 </select><br><br>
@@ -129,70 +129,168 @@ async function loadFile(){
 
 // Search data for selected date
 function searchData(){
-  if(!workbookData){document.getElementById("result").innerHTML="⚠️ Load a file first.";return;}
+  if(!workbookData){
+    document.getElementById("result").innerHTML="⚠️ Load a file first.";
+    return;
+  }
+
   const picker=document.getElementById("datePicker");
-  if(!picker.value){document.getElementById("result").innerHTML="⚠️ Please select a date.";return;}
+  if(!picker.value){
+    document.getElementById("result").innerHTML="⚠️ Please select a date.";
+    return;
+  }
+
   const selectedDate=new Date(picker.value).toLocaleDateString("en-GB");
-  const headers=workbookData[0];
+  const headers=workbookData[0] || [];
   const row=workbookData.find((r,i)=>i>0 && normalizeDate(r[0])===selectedDate);
   const resDiv=document.getElementById("result");
 
-  if(!row){resDiv.innerHTML="❌ दिनाङ्क "+selectedDate+"उपलब्ध नहीं है";return;}
-
-  let out=`<b>Date:</b> ${selectedDate}<br><br>`;
-  for(let i=1;i<headers.length;i++){
-    const name=headers[i];
-    let val=row[i];
-//Roman to Devnagri mapping word by word:
-  const dayMap = { Sun:"रविवार", Mon:"सोमवार", Tue:"मङ्गलवार", Wed:"बुधवार", Thu:"बृहस्पतिवार", Fri:"शुक्रवार", Sat:"शनिवार" };
-  if(i === 2 && dayMap[val]) 
-    val = dayMap[val];
-  // nakshatra name mapping (if col2 has Sun/Mon etc.)
-  const nakshatraMap = { "1-Ashvini": "अश्विनी", "2-Bharani": "भरणी", "3-Krittikä": "कृत्तिका", "5-Mrigshirä": "रोहिणी", "6-Ärdrä": "मृगशिरा", "7-Punarvasu": "आर्द्रा", "8-Pušya": "पुनर्वसु", "9-Äshlešä": "पुष्य", "10-Maghä": "अश्लेषा", "11-1Phälguni": "मघा", "12-2Phälguni": "पूर्वाफाल्गुनी", "13-Hasta": "उत्तराफाल्गुनी", "14-Chiträ": "हस्त", "15-Sväti": "चित्रा", "15-Sväti": "स्वाती", "16-Vishäkhä": "विशाखा", "17-Anurädhä": "अनुराधा", "18-Jyešthä": "ज्येष्ठा", "19-Moola": "मुल", "20-1Äšädha": "पुर्वाषाढा", "21-2Äšädha": "उत्तरषाढा", "22-Shravana": "श्रवण", "23-Dhaništhä": "धनिष्ठा", "24-Shatbhiš": "शतभिषा", "25-1Bhädrpad": "पूर्वभाद्रपद", "26-2Bhädrpad": "उत्तरभाद्रपद", "27-Revati": "रेवती" };
-  if(i === 16 && nakshatraMap[val]) 
-    val = nakshatraMap[val];
-
-  // yog name mapping (if col5 has 01:Viškambh etc.)
-  const yogMap = { "01:Viškambh": "विष्कुम्भ", "02:Preeti": "प्रीति", "03:Ayušmän": "आयुष्मान", "04:Saubhägy": "सौभाग्य", "05:Shobhan": "शोभन", "06:Atigand": "अतिगण्ड", "07:Sukarman": "सुकर्मा", "08:Dhriti": "धृति", "09:Shoola": "शूल", "10:Ganda": "गण्ड", "11:Vriddhi": "वृद्धि", "12:Dhruva": "ध्रुव", "13:Vyäghät": "व्याघात", "14:Haršan": "हर्षण", "15:Vajra": "वज्र", "16:Siddhi": "सिद्धि", "17:Vyatipät": "व्यतीपात", "18:Variyän": "वरीयान्", "19:Parigha": "परिघ", "20:Shiva": "शिव", "21:Siddha": "सिद्ध", "22:Sädhy": "साध्य", "23:Shubha": "शुभ", "24:Shukla": "शुक्ल", "25:Brahma": "ब्रह्म", "26:Indra": "इन्द्र", "27:Vædhrti": "वैधृति"};
-  if(i === 5 && yogMap[val]) 
-  val = yogMap[val];
-
- // day name mapping (if col2 has Sun/Mon etc.)
-  const karanMap = { "Bava": "बव", "Bälav": "बालव", "Kaulav": "कौलव", "Taitil": "तैतिल", "Gara": "गर", "Vanij": "वणिज", "Višti": "विष्टि *(भद्रा)*", "Shakun": "शकुनि", "Chatuš": "चतुष्पाद", "Näga": "नाग", "Kimstu": "किस्तुघ्न" };
-  if(i === 7 && karanMap[val]) 
-  val = karanMap[val];
-
-
-//Roman to Devnagri mapping samapta
-
-    // ✅ Step 1: Check if this is column 13 (index 12)
-  if (i === 13 && String(val).trim() === "0") {
-    val = "अहोरात्र"; // Replace directly
+  if(!row){
+    resDiv.innerHTML="❌ दिनाङ्क "+selectedDate+" उपलब्ध नहीं है";
+    return;
   }
 
-  // ✅ Step 2: Handle time formatting logic for other columns
-  else
+  // ----------------------------------------------
+  // CLEAR OLD VARIABLES col0, col1, col2, ...
+  // ----------------------------------------------
+  for(let k in window){
+    if(k.startsWith("col")) delete window[k];
+  }
 
+  // ----------------------------------------------
+  // BUILD OUTPUT + COLUMN VARIABLE MAPPING + DEVNAGARI FIX
+  // ----------------------------------------------
+  let out = `<b>Date:</b> ${selectedDate}<br><br>`;
+
+  for(let i=0;i<headers.length;i++){
+    let name = headers[i] || ("col"+i);
+    let val = row[i];
+
+    // -----------------------------
+    // DEVNAGARI CONVERSIONS (RESTORED)
+    // -----------------------------
+    // DAY NAME
+    const dayMap = { Sun:"रविवार", Mon:"सोमवार", Tue:"मंगलवार", Wed:"बुधवार",
+                     Thu:"बृहस्पतिवार", Fri:"शुक्रवार", Sat:"शनिवार" };
+    if(i===2 && dayMap[val]) val = dayMap[val];
+
+    // NAKSHATRA NAME
+    const nakshatraMap = {
+      "1-Ashvini":"अश्विनी","2-Bharani":"भरणी","3-Krittikä":"कृत्तिका",
+      "4-Rohini":"रोहिणी","5-Mrigshirä":"मृगशीर्ष","6-Ärdrä":"आर्द्रा",
+      "7-Punarvasu":"पूनर्वसू","8-Pušya":"पुष्य","9-Äshlešä":"आश्लेषा",
+      "10-Maghä":"मघा","11-1Phälguni":"पूर्वाफाल्गुनी","12-2Phälguni":"उत्तराफाल्गुनी",
+      "13-Hasta":"हस्त","14-Chiträ":"चित्रा","15-Sväti":"स्वाती",
+      "16-Vishäkhä":"विशाखा","17-Anurädhä":"अनुराधा","18-Jyešthä":"ज्येष्ठा",
+      "19-Moola":"मूल","20-1Äšädha":"पूर्वाषाढ़ा","21-2Äšädha":"उत्तराषाढ़ा",
+      "22-Shravana":"श्रवण","23-Dhaništhä":"धनिष्ठा","24-Shatbhiš":"शतभिषा",
+      "25-1Bhädrpad":"पूर्वभाद्रपद","26-2Bhädrpad":"उत्तरभाद्रपद","27-Revati":"रेवती"
+    };
+    if(i===16 && nakshatraMap[val]) val = nakshatraMap[val];
+
+    // YOG NAME
+    const yogMap = {
+      "01:Viškambh":"विष्कुम्भ","02:Preeti":"प्रीति","03:Ayušmän":"आयुष्मान",
+      "04:Saubhägy":"सौभाग्य","05:Shobhan":"शोभन","06:Atigand":"अतिगण्ड",
+      "07:Sukarman":"सुकर्मा","08:Dhriti":"धृति","09:Shoola":"शूल",
+      "10:Ganda":"गण्ड","11:Vriddhi":"वृद्धि","12:Dhruva":"ध्रुव",
+      "13:Vyäghät":"व्याघात","14:Haršan":"हर्षण","15:Vajra":"वज्र",
+      "16:Siddhi":"सिद्धि","17:Vyatipät":"व्यतीपात","18:Variyän":"वरीयान्",
+      "19:Parigha":"परिघ","20:Shiva":"शिव","21:Siddha":"सिद्ध","22:Sädhy":"साध्य",
+      "23:Shubha":"शुभ","24:Shukla":"शुक्ल","25:Brahma":"ब्रह्म","26:Indra":"इन्द्र",
+      "27:Vædhrti":"वैधृति"
+    };
+    if(i===5 && yogMap[val]) val = yogMap[val];
+
+    // KARAN NAME
+    const karanMap={
+      "Bava":"बव","Bälav":"बालव","Kaulav":"कौलव","Taitil":"तैतिल",
+      "Gara":"गर","Vanij":"वणिज","Višti":"विष्टि (भद्रा)",
+      "Shakun":"शकुनि","Chatuš":"चतुष्पाद","Näga":"नाग","Kimstu":"किंस्थुघ्न"
+    };
+    if(i===7 && karanMap[val]) val = karanMap[val];
+
+    // SPECIAL CASE — अहोरात्र
+    if(i===13 && String(val).trim()==="0") val = "अहोरात्र";
+
+    // --------------------------------
+    // TIME LOGIC (RESTORED EXACTLY)
+    // --------------------------------
     if(typeof val==="string" && /^\d{2,}:\d{2}(:\d{2})?$/.test(val.trim())){
-      // Already formatted time
-    }else if(!isNaN(val)&&val!==""){
-      const num=parseFloat(val);
-      if(num>=0 && num<2 && i !== 3) val=excelTimeToHMS(num);
+      // already formatted time — do nothing
+    }
+    else if(!isNaN(val) && val!==""){
+      const num = parseFloat(val);
+      if(num >= 0 && num < 2 && i !== 3){
+        val = excelTimeToHMS(num);
+      }
     }
 
-
-   // const varName=name.replace(/\s+/g,"_").replace(/[^a-zA-Z0-9_]/g,"");
+    // --------------------------------
+    // Create JS variable: window.col{index}
+    // --------------------------------
     const varName = "col"+i;
-    window[varName]=val;
+    window[varName] = val;
 
-    
-    out+=`<b>${name}:</b> <span id="${varName}">${val}</span><br>`;
-    //document.getElementById("test").innerText = window.col3;
-
+    // --------------------------------
+    // Add line to HTML output
+    // --------------------------------
+    out += `<b>${name}:</b> <span id="${varName}">${val}</span><br>`;
   }
-  
-  resDiv.innerHTML=out;
+
+  // -------------------------------------------------------------------
+  //  Compute Lagna (works only if sunrise + lat/lon + sunDeg available)
+  // -------------------------------------------------------------------
+  const sel=document.getElementById("fileLink");
+  const opt=sel.options[sel.selectedIndex];
+
+  const lat  = opt.dataset.lat  ? parseFloat(opt.dataset.lat)  : NaN;
+  const lon  = opt.dataset.lon  ? parseFloat(opt.dataset.lon)  : NaN;
+
+  // Find sunrise again:
+  let sunriseStr = "";
+  for(let j=0;j<headers.length;j++){
+    let txt = headers[j] ? headers[j].toString().toLowerCase() : "";
+    if(txt.includes("sunrise") || txt.includes("सूर्योदय")){
+      sunriseStr = window["col"+j];
+      break;
+    }
+  }
+  if(!sunriseStr){  
+    for(let j=7;j<=12 && j<row.length;j++){
+      if(typeof row[j]==="string" && row[j].includes(":")){
+        sunriseStr = row[j];
+        break;
+      }
+    }
+  }
+  if(sunriseStr && !isNaN(parseFloat(sunriseStr))){
+    sunriseStr = excelTimeToHMS(parseFloat(sunriseStr));
+  }
+
+  const sunDegRaw = window.col17;
+  const sunDeg = window.parseAngleGeneric(sunDegRaw, true);
+
+  let lagnaDeg = NaN;
+  if(!isNaN(lat) && !isNaN(lon) && sunriseStr && !isNaN(sunDeg)){
+    lagnaDeg = computeLagna(new Date(picker.value), sunriseStr, sunDeg, lat, lon);
+    if(!isNaN(lagnaDeg)) window.colLAGNA = lagnaDeg;
+  }
+
+  if(!isNaN(lagnaDeg)){
+    out += `<b>लग्न (°):</b> ${ Math.round(lagnaDeg*100)/100 }<br>`;
+  } else {
+    out += `<b>लग्न:</b> उपलब्ध नहीं (lat/lon/sunrise required)<br>`;
+  }
+
+  document.getElementById("result").innerHTML = out;
+
+  // Show chart and render
+  document.getElementById("gc_container").style.display = "block";
+  renderCurrentStyle();
 }
+
+
 function displayChakra(){
   document.getElementById("gc_container").style.display= "block";
 }
@@ -220,7 +318,7 @@ function displayChakra(){
 
 <div id="gc_container" >
   <div id="gc_controls">
-    <select id="gc_style" class="gc_sel" style="display: none;">
+    <select id="gc_style" class="gc_sel" >
       <option value="south">चक्रम्</option>
       <option value="north">वर्ग</option>
     </select>

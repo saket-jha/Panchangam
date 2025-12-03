@@ -9,11 +9,20 @@ document.addEventListener("DOMContentLoaded", function () {
     display:flex;
     align-items:center;
     justify-content:space-between;
-    font-family:Arial,sans-serif;
+    font-family:Arial, "Unicode MS";
     position:sticky;
     top:0;
     z-index:1000;
   }
+
+  .logo a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  font-size: 42px;
+  font-family: Arial, "Unicode MS";
+}
+
   .logo {font-size:22px; font-weight:bold;}
   .nav a {
     color:white;
@@ -64,6 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
   padding: 10px;
   color: white;
   text-decoration: none;
+  text-align: left;
 }
 
 .dropdown-content a:hover {
@@ -87,23 +97,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-  body {margin:0; overflow-x:hidden;}
+  body {margin:0; overflow-x:hidden; font-family: Arial, Unicode MS;}
   table, canvas, svg {max-width:100%;}
   </style>
 
   <header class="site-header">
-    <div class="logo">पञ्चाङ्गम्</div>
+    <div class="logo"><a href="index.html">पञ्चाङ्गम्</a></div>
     <div class="menu-toggle" onclick="document.getElementById('nav').classList.toggle('show')">☰</div>
     <nav class="nav" id="nav">
       <a href="index.html" class="home-btn" title="Home">🏠Home</a>
 
-      <div class="dropdown">
+  <div class="dropdown">
   <a href="#" class="dropbtn">पञ्चाङ्गम्▾</a>
   <div class="dropdown-content">
-    <a href="chartup5.html">चक्र सहित</a>
+    <a href="chartup6.html">चक्र सहित</a>
     <a href="GovindJiStyle.html">साधारण</a>
-  </div>
-      <a href="GovindJiStyle.html">GovindJi</a>
+  </div></div>
+  <div class="dropdown">
+  <a href="#" class="dropbtn">ग्रहशान्ति▾</a>
+  <div class="dropdown-content">
+    <a href="GenRule.html">सामान्य नियम</a>
+    <a href="SuryaShanti.html">सूर्यशान्ति</a>
+    <a href="ChandraShanti.html">चन्द्रशान्ति</a>
+    <a href="MangalShanti.html">मङ्गलशान्ति</a>
+    <a href="BudhaShanti.html">बुधशान्ति</a>
+    <a href="GuruShanti.html">बृहस्पतिशान्ति</a>
+    <a href="ShukraShanti.html">शुक्रशान्ति</a>
+    <a href="ShaniShanti.html">शनिशान्ति</a>
+    <a href="RahuShanti.html">राहुशान्ति</a>
+    <a href="KetuShanti.html">केतुशान्ति</a>
+  </div></div>
+      <a href="vividh.html">विविध-अनुष्ठान</a>
     </nav>
   </header>
   `;
