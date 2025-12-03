@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var header = `
   <style>
   .site-header {
-    background:#121233;
+    background:#f17115ff;
     color:white;
     padding:12px 18px;
     display:flex;
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #1c1c3c;
+  background-color: #f17115ff;
   min-width: 170px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.4);
   z-index: 999;
