@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="header.js"></script>
+<link rel="stylesheet" href="./css/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>श्रीसूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  body{align-items: center; align-content: center; text-align: center; font-size: larger; font-family:Arial,Helvetica,sans-serif;margin:30px;background:#ffffff;align-content: center;font-weight: bolder;}
+  input,select,button{margin:6px 0;padding:8px;border:1px solid #ccc;border-radius:6px;}
+  button{background:#007bff;color:#fff;cursor:pointer;}
+  button:hover{background:#0056b3;}
+  #result{  background:#f9e0a6;border-radius:10px;padding:20px;margin-top:20px;
+          box-shadow:0 0 10px rgba(0,0,0,0.1);}
+  b{color:#007bff;}
+</style>
+</head>
+<body>
+  <div class="layout-container">
+    <div class="info-panel">
+        <!-- Your left panel content here -->
+         <div style="color: #000000;background-color: #ffffff;font-size: 14px;font-family: Consolas, 'Courier New', monospace;"><span style="color: #cccccc;"><span style="color: rgb(44, 130, 201);"><strong><span style="font-size: 17px;">
+            ॥ श्री सूर्यसिद्धान्तः शुद्ध शास्त्रीय ॥</span></strong></span><span style="color: #000000;"><br></span><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">एक वैदिक-पौराणिक-ज्योतिषीय विवेचन:</span></strong></span><br><span style="color: #000000;">भारतीय कालगणना में&nbsp;<strong>आज</strong> दो पद्धतियाँ प्रचलित हैं&mdash;<br><span style="color: #000000;">१. सूर्यसिद्धान्त पर आधारित पारम्परिक पञ्चाङ्ग</span></span><br><span style="color: #000000;">२. दृक्-पक्षीय पञ्चाङ्ग (Drik Panchang)</span><br><span style="color: #000000;">आधुनिक काल में कई विद्वान ग्रहों की तत्कालीन <strong>भौतिक</strong> खगोलीय गति (real-time ephemeris) पर आधारित दृक्-पक्ष को वैज्ञानिक मान लेते हैं; परन्तु शास्त्रीय आधार पर पञ्चाङ्ग-निर्णय का मूल प्रमाण सूर्यसिद्धान्त ही माना गया है। शास्त्र का उद्देश्य <strong>देव-काल, ऋतु-चक्र, धर्म-कर्म और ब्रह्माण्डीय लय</strong> को यथावत् रूप में ग्रहण करना है&mdash;न कि केवल क्षणिक भौतिक स्थिति को।</span><br><span style="color: #000000;">इसीलिए शास्त्रीय परम्परा सर्वसम्मति से कहती है&mdash;<br></span><span style="color: rgb(44, 130, 201);"><strong>&ldquo;सौर्यम् सिद्धान्तं हि पञ्चाङ्गस्य मूलम्&rdquo;</strong></span><span style="color: #000000;"><br>अर्थात् सूर्यसिद्धान्त ही पञ्चाङ्ग का परम आधार है।</span><br><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">१. दैव-प्रणीतत्वम् &mdash; सूर्योपदिष्ट ज्ञान</span></strong></span><br><span style="color: #000000;">सूर्यसिद्धान्त का उद्गम दैविक बताया गया है&mdash;</span><br><span style="color: #000000;">सूर्यदेव ने यह ज्ञान मयदानव को उपदिष्ट किया।</span><br><span style="color: #000000;">यह शास्त्र ऋषि-परम्परा में संरक्षित रहा।</span><br><span style="color: #000000;">इसे <strong>&ldquo;दैव-निर्मित काल-सूत्र&rdquo;</strong> कहा गया।</span><br><span style="color: #000000;">दूसरी ओर दृक्-पक्ष आधुनिक वैज्ञानिक उपकरणों पर आधारित है, जिनका दैव-प्रमाण या ऋषि-मत से कोई सम्बन्ध नहीं।अतः धर्म-कर्म के दृष्टि से दृक् पञ्चाङ्ग अर्थहीन है ।</span><br><span style="color: #000000;">शास्त्र कहता है&mdash;&nbsp;</span><span style="color: rgb(226, 80, 65);"><strong>&ldquo;दैवम् हि कालः&rdquo;</strong></span><span style="color: #000000;">&nbsp;&ndash; काल स्वयं देवस्वरूप है। जब काल देवतामय है, तो उसकी गणना भी <strong>दैव-प्रणीत सिद्धान्त</strong> से ही&nbsp;<strong>शुद्ध</strong> होगी।<br></span><br><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">२. शास्त्रीय निर्देश</span></strong></span><span style="color: #000000;">&nbsp;<br>तिथि-नक्षत्र आदि सूर्यसिद्धान्तीय होने चाहिए</span><br><span style="color: #000000;">धर्मशास्त्रों में स्पष्ट कहा है&mdash;</span><br><span style="color: #000000;"><strong>&ldquo;तिथीनां गणना सिद्धान्ते&rdquo; &ldquo;नक्षत्रादिनां निर्णयः सूर्यसिद्धान्ते स्थापितम्&rdquo;</strong></span><br><span style="color: #000000;">अर्थात् तिथि, नक्षत्र, योग, करण आदि का निर्णय सूर्यसिद्धान्तीय सूत्रों द्वारा ही शुद्ध माना जाता है।</span><br><span style="color: #000000;">दृक्-पक्षीय पञ्चाङ्ग इस शास्त्रीय नियम का पालन नहीं करता,क्योंकि वह भौतिक खगोलीय आँकड़े लेता है, न कि शास्त्रसम्मत सविता देवता पर आधारित गणना।</span><br><span style="color: #000000;">इस प्रकार दृक् पञ्चाङ्ग शास्त्रीय प्रमाण का अधिकार नहीं रखता, जबकि सूर्यसिद्धान्त शास्त्र प्रदत्त सर्वोच्च प्रमाण है।<br></span><br><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">३. </span></strong><span style="font-size: 15px;"><strong>धर्म-कर्म में &ldquo;सिद्धान्त शुद्धि&rdquo; अपेक्षित है, न कि &ldquo;दृक्-क्षणिकता&rdquo;</strong></span></span><br><span style="color: #000000;">वैदिक कर्मकाण्ड में दिव्य काल की गणना चाहिए, न कि भौतिक, परिक्षणीय काल।</span><br><span style="color: #000000;">यज्ञ, जप, संस्कार आदि के फल भौतिक खगोलीय स्थिति पर निर्भर नहीं,</span><br><span style="color: #000000;">अपितु दैव-नियत कालचक्र पर निर्भर हैं।</span><br><span style="color: #000000;">सूर्यसिद्धान्त की गति दैव-नियत और स्थिर है। इससे प्राप्त पञ्चाङ्ग ऋतुमय, सृष्टिचक्रानुगत और वैदिक अनुकूल होता है।<br></span><br><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">४. सूर्यसिद्धान्त ऋतु-चक्र और देव-काल के संगत; दृक्-पक्ष केवल भौतिक</span></strong></span><br><span style="color: #000000;">धर्मशास्त्र कहता है&mdash;&ldquo;ऋतवः देवकर्मसु प्रधानाः।&rdquo;</span><br><span style="color: #000000;">ऋतु-निर्णय सूर्य की दीर्घवृत्तीय गति पर आधारित है, जिसे सूर्यसिद्धान्त अत्यन्त सूक्ष्मता से प्रकट करता है।&nbsp;</span><br><br><br><span style="color: #000000;">श्राद्ध, संस्कार, यज्ञ, पूजा,&nbsp;व्रत-नियम, संक्रान्ति,&nbsp;नक्षत्र-विधान, ऋतु परिवर्तन,&nbsp;उत्सव व देवकाल&nbsp;इनका आधार दैव-नियत काल है, न कि सूर्य-चन्द्र की भौतिक स्थिति।</span><br><span style="color: #000000;">उदाहरण:</span><br><span style="color: #000000;">शकुन-विधि</span><br><span style="color: #000000;">विवाहादि शुभ-मुहूर्त</span><br><span style="color: #000000;">श्राद्ध-तिथि</span><br><span style="color: #000000;">ग्रहशान्ति विधान</span><br><span style="color: #000000;">इन सभी में शास्त्रीय निर्देश सूर्यसिद्धान्त को ही प्रमाण मानते हैं। दृक्-पक्ष इन धार्मिक शास्त्रों के अनुकूल नहीं है।<br></span><br><br><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">५. परम्परा&ndash;सिद्धता</span></strong></span><br><span style="color: #000000;">भारतीय पंचांग परम्परा&nbsp;</span><span style="color: #000000;">सहस्राब्दियों से सूर्यसिद्धान्त पर आधारित हैं।</span><br><span style="color: #000000;">दृक्-पक्ष मात्र 100&ndash;120 वर्ष पुराना आधुनिक प्रयास है। ऐसे अल्पकालीन प्रयोग को शास्त्रीय परम्परा पर सर्वोपरि नहीं किया जा सकता।</span></div>
+
+
+    </div>
+    <div class="main-panel">
+      <!-- Your left panel content here -->
+       <h1 style="text-align: center; font-size: larger;">सूर्यसिद्धान्तीय पञ्चाङ्गम् </h1>
+
+
+<input type="file" id="excelFile" style="display:none" accept=".xlsx,.xls" />
+<select id="fileLink">
+  <option value="">स्थान चुनें</option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/f0wbxmv8o980slrf9tu78/kashi2026.xlsx?rlkey=rcg3wqkgtr5h96eagaq9lrhsr&st=9qdszwtc" data-lat="25.3176" data-lon="82.9739">काशी</option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/0bqwm2tujar29lx3lojkk/Jammu2026.xlsx?rlkey=zh2ilevfrdcyg0eav0xitcr58&st=861magrj" data-lat="32.7500" data-lon="74.8333">जम्मू</option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/pfs2i8vwidu9ae30a74ge/Jaipur2026.xlsx?rlkey=zgnab4o66ualfuv0z10mxf3ef&st=8od76qgz" data-lat="27.0000" data-lon="76.0000">जयपुर</option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/80ko4l0ahvm5pfyzbcubi/Darbhanga2026.xlsx?rlkey=pjb5cffap0t0ysy2b244361co&st=5cbwkijc" data-lat="26.0000" data-lon="86.0000">दरभङ्गा</option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/14dto41n2vzhw7x6qio60/NewDelhi2026.xlsx?rlkey=ktm6wgjgpykq2g50mz0oi8m9r&st=xtvigu8y" data-lat="28.6000" data-lon="77.2000">नई दिल्ली</option>
+  <option value="https://dl.dropboxusercontent.com/scl/fi/vujop3gfrrvvb9ym4mrcc/Ludhiana2026.xlsx?rlkey=jwgiee421mbdijv25xpx6p5rd&st=6gss7hi5" data-lat="30.8833" data-lon="75.8500">लुधियाना</option>
+</select><br><br>
+
+<button onclick="loadFile()">पुष्टि करें</button><br><br>
+
+<div id="dateSection" style="display:none; text-align: center;">
+  <label style="font-size: larger;">आङ्ग्ल दिनाङ्क चुनें</label><br>
+  <input type="date" style="font-size: larger;" id="datePicker" /><br><br>
+  <button onclick="searchData()" style="font-size: larger;">पञ्चाङ्ग</button>
+  <button onclick="searchData();displayChakra()" style="font-size: larger;">चक्र देखें</button>
+</div>
+
+<h3 style="text-align: center; font-size: larger;">चयनित दिनाङ्क का पञ्चाङ्ग</h3>
+<div id="result" style="text-align: center; font-size: larger;"></div>
+<button id="panchangam_export" class="gc_btn">Export PNG</button>
+<div id="panchangam">
+  <img class="bg-img" src="./images/suryadev.jpg" />
+  <div class="overlay"></div>
+  <div class="content">
+  <p>॥ॐ श्रीगणेशाय नम:॥</p>
+  <p>॥श्रीसूर्यसिद्धान्तीय 🌞 पञ्चाङ्ग॥</p>  
+  <p><span id="nDinaank" class="heading">दिनांक: </span><span id="dinaank" class="value"></span> ई०</p>
+  <p><span id="nVSamvat" class="heading">विक्रम सम्वत: </span> <span id="vSamvat" class="value" ></span></p>
+  <p><span id="nSSamvat" class="heading">शक सम्वत: </span> १९४७</p>
+  <p><span id="nRitu" class="heading">ऋतु: </span><span id="ritu" class="value" ></span></p>
+  <p><span id="nMaasPaksha" class="heading">मास व पक्ष: </span><span id="maas"  class="value"></span>&nbsp;<span id="paksha"  class="value"></span></p>
+  <p><span id="nDin" class="heading">वार: </span><span id="din" class="value"></span></p>
+  <p><span id="nTithi" class="heading">तिथि: </span><span id="tithi" class="value"></span> (<span id="tithyant" class="value"></span> बजे तक)</p>
+  <p><span id="nNakshatra" class="heading">नक्षत्र: </span><span id="nakshatra" class="value"></span> (<span id="nakshatraant" class="value"></span> बजे तक)</p>
+
+  <!-- Rashi spans remain in HTML but are NOT set by this script -->
+  <p><span id="nRashi" class="heading">राशि: </span> <span id="rashi" class="value"></span>&nbsp;<span id="rashyant" class="value"></span> <span id="rashi2" class="value"></span></span>)</p>
+
+  <p><span id="nKaran1" class="heading">करण १:</span><span id="karan" class="value"></span> (<span id="karanant1" class="value"></span> बजे तक)</p>
+  <p><span id="nKaran2" class="heading">करण २:</span> <span id="karan2" class="value"></span> (<span id="karanant2" class="value"></span> बजे तक)</p>
+  <p><span id="nKaran3" class="heading">करण ३:</span> <span id="karan3" class="value"></span> (सूर्योदयपर्यन्त)</p>
+
+  <p><span id="nYog" class="heading">योग: </span><span id="yog" class="value"></span> (<span id="yogant" class="value"></span> बजे तक)</p>
+  <p><span id="nSuryodaya" class="heading">सूर्योदय: </span><span id="suryodaya" class="value"></span> बजे</p>
+  <p><span id="nSuryast" class="heading">सूर्यास्त: </span><span id="suryast" class="value"></span> बजे</p>
+  <p><span id="nDikshool" class="heading">दिशाशूल: </span><span id="dikshool" class="value"></span></p>
+  <p>॥तन्मेमनः शिवसङ्कल्पमस्तु॥</p>
+</div></div>
+
+<!-- Chart container -->
+<div id="gc_container" >
+  <div id="gc_controls" >
+    <select id="gc_style" class="gc_sel" style="display: none;" >
+      <option value="south">चक्रम्</option>
+      <option value="north">वर्ग</option>
+    </select>
+    <button id="gc_export"  class="gc_btn">Export PNG</button>
+    <button id="gc_hide" class="gc_btn">Hide Chart</button>
+  </div>
+
+  <div id="gc_canvas_wrap" style="position:relative; display:inline-block;">
+  <img id="north_bg" src="KundaleeSample.jpg" style="width:100%; max-width:420px; display:block;">
+  <canvas id="gc_canvas" style="position:absolute; top:0; left:0;"></canvas>
+  <div id="gc_tooltip"></div>
+</div>
+
+    <div id="gc_tooltip"></div>
+  </div>
+</div>
+
+    <div class="info2-panel">
+        <!-- Your right panel content here -->
+        © 2024 श्रीसूर्यसिद्धान्तीय पञ्चाङ्गम् |
+
+    </div>
+  </div>
+
+
+
+<script>
+/* ---------- Keep your original parsing helpers (unchanged) ---------- */
+let workbookData = null;
+function normalizeDate(v){
+  if(!v) return "";
+  if(!isNaN(v)){
+    const base=new Date(Date.UTC(1899,11,30));
+    base.setDate(base.getDate()+Number(v));
+    return base.toLocaleDateString("en-GB");
+  }
+  const d=new Date(v);
+  if(!isNaN(d)) return d.toLocaleDateString("en-GB");
+  return v.toString().trim();
+}
+function excelTimeToHMS(value){
+  if(isNaN(value)) return value;
+  const totalSec=Math.round(value*24*3600);
+  const h=Math.floor(totalSec/3600);
+  const m=Math.floor((totalSec%3600)/60);
+  const s=totalSec%60;
+  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
+}
+
+/* ---------- Load file (unchanged) ---------- */
+async function loadFile(){
+  const file=document.getElementById("excelFile").files[0];
+  const link=document.getElementById("fileLink").value.trim();
+  const resDiv=document.getElementById("result");
+  resDiv.innerHTML="⏳ गणना हो रही है.....";
+  try{
+    let buffer;
+    if(file){ buffer=await file.arrayBuffer(); }
+    else if(link){ const resp=await fetch(link); if(!resp.ok) throw new Error("Cannot load file"); buffer=await resp.arrayBuffer(); }
+    else{ resDiv.innerHTML="⚠️ कृपया पहले स्थान चुनें"; return; }
+    const wb=XLSX.read(new Uint8Array(buffer),{type:"array"});
+    const sh=wb.Sheets[wb.SheetNames[0]];
+    workbookData=XLSX.utils.sheet_to_json(sh,{header:1,raw:true,defval:""});
+    document.getElementById("dateSection").style.display="block";
+    resDiv.innerHTML="✅ कृपया आङ्ग्ल दिनाङ्क चुनें";
+  }catch(err){
+    console.error(err);
+    resDiv.innerHTML="❌ गणना करने में त्रुटि हो रही है";
+  }
+}
+
+/* ---------- searchData: fills window.colN and computes Lagna ---------- */
+function searchData(){
+  if(!workbookData){document.getElementById("result").innerHTML="⚠️ Load a file first.";return;}
+  const picker=document.getElementById("datePicker");
+  if(!picker.value){document.getElementById("result").innerHTML="⚠️ Please select a date.";return;}
+  const selectedDate=new Date(picker.value).toLocaleDateString("en-GB");
+  const headers=workbookData[0] || [];
+  const row=workbookData.find((r,i)=>i>0 && normalizeDate(r[0])===selectedDate);
+  const resDiv=document.getElementById("result");
+  if(!row){resDiv.innerHTML="❌ दिनाङ्क "+selectedDate+" उपलब्ध नहीं है"; return;}
+
+  // clear previous col vars
+  for(let k in window){ if(k.startsWith('col')) delete window[k]; }
+  // populate column vars exactly like before
+  let out=`<b>Date:</b> ${selectedDate}<br><br>`;
+  for(let i=1;i<headers.length;i++){
+    let name=headers[i] || ("col"+i);
+    let val = row[i];
+
+
+    /*/ -----------------------------
+    // DEVNAGARI CONVERSIONS (RESTORED)
+    // -----------------------------
+    // DAY NAME
+    const dayMap = { Sun:"रविवार", Mon:"सोमवार", Tue:"मंगलवार", Wed:"बुधवार",
+                     Thu:"बृहस्पतिवार", Fri:"शुक्रवार", Sat:"शनिवार" };
+    if(i===2 && dayMap[val]) val = dayMap[val];
+
+    // NAKSHATRA NAME
+    const nakshatraMap = {
+      "1-Ashvini":"अश्विनी","2-Bharani":"भरणी","3-Krittikä":"कृत्तिका",
+      "4-Rohini":"रोहिणी","5-Mrigshirä":"मृगशीर्ष","6-Ärdrä":"आर्द्रा",
+      "7-Punarvasu":"पूनर्वसू","8-Pušya":"पुष्य","9-Äshlešä":"आश्लेषा",
+      "10-Maghä":"मघा","11-1Phälguni":"पूर्वाफाल्गुनी","12-2Phälguni":"उत्तराफाल्गुनी",
+      "13-Hasta":"हस्त","14-Chiträ":"चित्रा","15-Sväti":"स्वाती",
+      "16-Vishäkhä":"विशाखा","17-Anurädhä":"अनुराधा","18-Jyešthä":"ज्येष्ठा",
+      "19-Moola":"मूल","20-1Äšädha":"पूर्वाषाढ़ा","21-2Äšädha":"उत्तराषाढ़ा",
+      "22-Shravana":"श्रवण","23-Dhaništhä":"धनिष्ठा","24-Shatbhiš":"शतभिषा",
+      "25-1Bhädrpad":"पूर्वभाद्रपद","26-2Bhädrpad":"उत्तरभाद्रपद","27-Revati":"रेवती"
+    };
+    if(i===16 && nakshatraMap[val]) val = nakshatraMap[val];
+
+    // YOG NAME
+    const yogMap = {
+      "01:Viškambh":"विष्कुम्भ","02:Preeti":"प्रीति","03:Ayušmän":"आयुष्मान",
+      "04:Saubhägy":"सौभाग्य","05:Shobhan":"शोभन","06:Atigand":"अतिगण्ड",
+      "07:Sukarman":"सुकर्मा","08:Dhriti":"धृति","09:Shoola":"शूल",
+      "10:Ganda":"गण्ड","11:Vriddhi":"वृद्धि","12:Dhruva":"ध्रुव",
+      "13:Vyäghät":"व्याघात","14:Haršan":"हर्षण","15:Vajra":"वज्र",
+      "16:Siddhi":"सिद्धि","17:Vyatipät":"व्यतीपात","18:Variyän":"वरीयान्",
+      "19:Parigha":"परिघ","20:Shiva":"शिव","21:Siddha":"सिद्ध","22:Sädhy":"साध्य",
+      "23:Shubha":"शुभ","24:Shukla":"शुक्ल","25:Brahma":"ब्रह्म","26:Indra":"इन्द्र",
+      "27:Vædhrti":"वैधृति"
+    };
+    if(i===5 && yogMap[val]) val = yogMap[val];
+
+    // KARAN NAME
+    const karanMap={
+      "Bava":"बव","Bälav":"बालव","Kaulav":"कौलव","Taitil":"तैतिल",
+      "Gara":"गर","Vanij":"वणिज","Višti":"विष्टि (भद्रा)",
+      "Shakun":"शकुनि","Chatuš":"चतुष्पाद","Näga":"नाग","Kimstu":"किंस्थुघ्न"
+    };
+    if(i===7 && karanMap[val]) val = karanMap[val];
+
+    // SPECIAL CASE — अहोरात्र
+    if(i===13 && String(val).trim()==="0") val = "अहोरात्र";
+*/
+    // --------------------------------
+    // TIME LOGIC (RESTORED EXACTLY)
+    // --------------------------------
+    if(typeof val==="string" && /^\d{2,}:\d{2}(:\d{2})?$/.test(val.trim())){
+      // already formatted time — do nothing
+    }
+    else if(!isNaN(val) && val!==""){
+      const num = parseFloat(val);
+      if(num >= 0 && num < 2 && i !== 3){
+        val = excelTimeToHMS(num);
+      }
+    }
+
+
+
+
+
+    window['col'+i] = val;
+    out += `<b>${name}:</b> <span id="col${i}">${val}</span><br>`;
+    //out += "";
+
+  }
+  
+
+  // ---- find sunrise column automatically (robust) ----
+  let sunriseStr = "";
+  const headerLower = headers.map(h => (h||"").toString().toLowerCase());
+  let sunriseIndex = -1;
+  const sunriseCandidates = ['sunrise','सूर्योदय','sun rise','sun_rise','sunrise_time','sunrise time','sun'];
+  for(let j=0;j<headerLower.length;j++){
+    for(const cand of sunriseCandidates){
+      if(headerLower[j].includes(cand)) { sunriseIndex = j; break; }
+    }
+    if(sunriseIndex !== -1) break;
+  }
+  if(sunriseIndex === -1){
+    // fallback: try common columns 7..12
+    for(let j=7;j<=12 && j < row.length;j++){
+      if(typeof row[j] === 'string' && row[j].includes(':')) { sunriseIndex=j; break; }
+    }
+  }
+  if(sunriseIndex !== -1){
+    sunriseStr = row[sunriseIndex];
+    // if numeric Excel time, convert
+    if(!isNaN(sunriseStr) && sunriseStr !== "") sunriseStr = excelTimeToHMS(parseFloat(sunriseStr));
+  }
+
+  // ---- read selected city lat/lon from option data- attributes ----
+  const sel=document.getElementById('fileLink');
+  const opt=sel.options[sel.selectedIndex];
+  const lat = opt && opt.dataset && opt.dataset.lat ? parseFloat(opt.dataset.lat) : NaN;
+  const lon = opt && opt.dataset && opt.dataset.lon ? parseFloat(opt.dataset.lon) : NaN;
+
+  // ---- sun degree is in col17 (user confirmed) ----
+  const sunRaw = window['col17'];
+  const sunDeg = (typeof window.parseAngleGeneric === 'function') ? window.parseAngleGeneric(sunRaw, true) : (parseFloat(sunRaw) || NaN);
+
+  // ---- compute Lagna (if possible) and store as window.colLAGNA ----
+  let lagnaDeg = NaN;
+  try{
+    if(!isNaN(lat) && !isNaN(lon) && sunriseStr && !isNaN(sunDeg)){
+      lagnaDeg = computeLagna(new Date(picker.value), String(sunriseStr), sunDeg, lat, lon);
+      if(!isNaN(lagnaDeg)) window.colLAGNA = lagnaDeg;
+    }
+  }catch(e){ console.warn("lagna compute failed", e); }
+
+  // show summary
+  if(!isNaN(lagnaDeg)){
+    out += `<b>लग्न (सूर्योदयकालीन):</b> ${Math.round(lagnaDeg*100)/100}<br>`;
+  } else {
+    out += `<b>लग्न:</b> (not computed) — need sunrise and lat/lon.<br>`;
+  }
+
+
+
+  resDiv.innerHTML = out;
+
+  // ensure chart is visible and render according to selected style
+  document.getElementById('panchangam').style.display = 'block';
+  document.getElementById('result').style.display = 'none';
+ // renderCurrentStyle();
+ // document.getElementById("dinaank").innerText = selDate;
+  document.getElementById("maas").innerText = window.col1 || "";
+  document.getElementById("din").innerText = window.col2 || "";
+  document.getElementById("tithi").innerText = window.col3 || "";
+  document.getElementById("tithyant").innerText = window.col4 || "";
+  document.getElementById("yog").innerText = window.col5 || "";
+  document.getElementById("yogant").innerText = window.col6 || "";
+  document.getElementById("karan").innerText = window.col7 || "";
+  document.getElementById("karanant1").innerText = window.col8 || "";
+  //document.getElementById("rashi").innerText = rashi || "";
+  document.getElementById("karanant2").innerText = window.col9 || "";
+ // document.getElementById("spashtSurya").innerText = window.col12 || "";
+  document.getElementById("suryodaya").innerText = window.col10 || "";
+  document.getElementById("suryast").innerText = window.col11 || "";
+ // document.getElementById("rashyant").innerText = window.col13 || "";
+  document.getElementById("nakshatraant").innerText = window.col15 || "";
+
+  // day name mapping (if col2 has Sun/Mon etc.)
+  const dayMap = { Sun:"रविवार", Mon:"सोमवार", Tue:"मङ्गलवार", Wed:"बुधवार", Thu:"बृहस्पतिवार", Fri:"शुक्रवार", Sat:"शनिवार" };
+  if(window.col2 && dayMap[window.col2]) 
+  document.getElementById("din").innerText = dayMap[window.col2];
+
+// dishashool name mapping (if col2 has Sun/Mon etc.)
+  const dikshoolMap = { Sun:"पश्चिम", Mon:"पूरब", Tue:"उत्तर", Wed:"उत्तर", Thu:"दक्षिण", Fri:"पश्चिम", Sat:"पूरब" };
+  if(window.col2 && dikshoolMap[window.col2]) 
+  document.getElementById("dikshool").innerText = dikshoolMap[window.col2];
+
+
+  // nakshatra name mapping (if col2 has Sun/Mon etc.)
+  const nakshatraMap = { "1-Ashvini": "अश्विनी", "2-Bharani": "भरणी", "3-Krittikä": "कृत्तिका", "5-Mrigshirä": "रोहिणी", "6-Ärdrä": "मृगशिरा", "7-Punarvasu": "आर्द्रा", "8-Pušya": "पुनर्वसु", "9-Äshlešä": "पुष्य", "10-Maghä": "अश्लेषा", "11-1Phälguni": "मघा", "12-2Phälguni": "पूर्वाफाल्गुनी", "13-Hasta": "उत्तराफाल्गुनी", "14-Chiträ": "हस्त", "15-Sväti": "चित्रा", "15-Sväti": "स्वाती", "16-Vishäkhä": "विशाखा", "17-Anurädhä": "अनुराधा", "18-Jyešthä": "ज्येष्ठा", "19-Moola": "मुल", "20-1Äšädha": "पुर्वाषाढा", "21-2Äšädha": "उत्तरषाढा", "22-Shravana": "श्रवण", "23-Dhaništhä": "धनिष्ठा", "24-Shatbhiš": "शतभिषा", "25-1Bhädrpad": "पूर्वभाद्रपद", "26-2Bhädrpad": "उत्तरभाद्रपद", "27-Revati": "रेवती" };
+  if(window.col16 && nakshatraMap[window.col16]) 
+  document.getElementById("nakshatra").innerText = nakshatraMap[window.col16];
+
+  // yog name mapping (if col5 has 01:Viškambh etc.)
+  const yogMap = { "01:Viškambh": "विष्कुम्भ", "02:Preeti": "प्रीति", "03:Ayušmän": "आयुष्मान", "04:Saubhägy": "सौभाग्य", "05:Shobhan": "शोभन", "06:Atigand": "अतिगण्ड", "07:Sukarman": "सुकर्मा", "08:Dhriti": "धृति", "09:Shoola": "शूल", "10:Ganda": "गण्ड", "11:Vriddhi": "वृद्धि", "12:Dhruva": "ध्रुव", "13:Vyäghät": "व्याघात", "14:Haršan": "हर्षण", "15:Vajra": "वज्र", "16:Siddhi": "सिद्धि", "17:Vyatipät": "व्यतीपात", "18:Variyän": "वरीयान्", "19:Parigha": "परिघ", "20:Shiva": "शिव", "21:Siddha": "सिद्ध", "22:Sädhy": "साध्य", "23:Shubha": "शुभ", "24:Shukla": "शुक्ल", "25:Brahma": "ब्रह्म", "26:Indra": "इन्द्र", "27:Vædhrti": "वैधृति"};
+  if(window.col5 && yogMap[window.col5]) 
+  document.getElementById("yog").innerText = yogMap[window.col5];
+
+ // day name mapping (if col2 has Sun/Mon etc.)
+  const karanMap = { "Bava": "बव", "Bälav": "बालव", "Kaulav": "कौलव", "Taitil": "तैतिल", "Gara": "गर", "Vanij": "वणिज", "Višti": "विष्टि (भद्रा)" };
+  // , "Shakun": "शकुनि", "Chatuš": "चतुष्पाद", "Näga": "नाग", "Kimstu": "किस्तुघ्न"
+  if(window.col7 && karanMap[window.col7]) 
+  document.getElementById("karan").innerText = karanMap[window.col7];
+ // find next karan
+ 
+      const keys = Object.keys(karanMap);
+      const currentIndex = keys.indexOf(window.col7);
+      const nextIndex = (currentIndex + 1) % keys.length; // wraps to start if last
+      const nextKey = keys[nextIndex];
+      const nextIndex1 = (currentIndex + 2) % keys.length; // wraps to start if last
+      const nextKey1 = keys[nextIndex1];
+
+      document.getElementById("karan2").innerText = karanMap[nextKey];
+      document.getElementById("karan3").innerText = karanMap[nextKey1];
+    
+
+
+  // numeric tithi -> name mapping (if applicable)
+  if(!isNaN(window.col3) && window.col3 !== "") {
+    const t = Number(window.col3);
+    const tithiNames = {
+      1:"प्रतिपदा",2:"द्वितीया",3:"तृतीया",4:"चतुर्थी",5:"पञ्चमी",6:"षष्ठी",7:"सप्तमी",
+      8:"अष्टमी",9:"नवमी",10:"दशमी",11:"एकादशी",12:"द्वादशी",13:"त्रयोदशी",14:"चतुर्दशी",15:"पूर्णिमा",
+      16:"प्रतिपदा",17:"द्वितीया",18:"तृतीया",19:"चतुर्थी",20:"पञ्चमी",21:"षष्ठी",22:"सप्तमी",
+      23:"अष्टमी",24:"नवमी",25:"दशमी",26:"एकादशी",27:"द्वादशी",28:"त्रयोदशी",29:"चतुर्दशी",30:"पूर्णिमा"
+    };
+    document.getElementById("tithi").innerText = tithiNames[t] || window.col3;
+    document.getElementById("paksha").innerText = (t <= 15 ? "शुक्लपक्ष" : "कृष्णपक्ष");
+  }
+
+
+    let rashi = Number(col14.split(":")[0])+1*1;
+    let rashi2 = Number(col14.split(":")[0])+2*1;
+
+     if (rashi2 == 13){
+      rashi2 = 1*1;
+     }
+
+
+     // rashi name mapping ( etc.)
+    const rashiMap = { 1:"मेष", 2:"वृषभ", 3:"मिथुन", 4:"कर्क", 5:"सिंह", 6:"कन्या", 7:"तुला", 8:"वृश्चिक", 9:"धनु", 10:"मकर", 11:"कुंभ", 12:"मीन"};
+    if(rashi && rashiMap[rashi]) 
+    document.getElementById("rashi").innerText = rashiMap[rashi];
+    if(rashi2 && rashiMap[rashi]) 
+    document.getElementById("rashi2").innerText = rashiMap[rashi2];
+
+
+
+
+     if (window.col13 === "00:00:00" ){
+      document.getElementById("rashi").innerText = "(चन्द्रमा *" + rashiMap[rashi] + " राशि* में अहोरात्र";
+      document.getElementById("rashyant").innerText = " ";
+      document.getElementById("rashi2").innerText = " ";
+     } else {
+     document.getElementById("rashi").innerText = "(चन्द्रमा *" + rashiMap[rashi] + " राशि* में ";
+     document.getElementById("rashyant").innerText = window.col13 + " बजे तक तदुपरान्त ";
+     document.getElementById("rashi2").innerText = "*" + rashiMap[rashi2] + " राशि* में ";
+
+     }
+    /*
+
+     let base = Number(col14.split(":")[0]);
+let rashi = base + 1;
+let rashi2 = base + 2;
+if (rashi2 === 13) rashi2 = 1;
+
+if (window.col13 === "00:00:00") {
+  document.getElementById("rashi").innerText = "चन्द्रमा " + rashi + " राशि में सुर्योदयपर्यन्त";
+  document.getElementById("rashyant").innerText = "";
+  document.getElementById("rashi2").innerText = "";
+} else {
+  document.getElementById("rashi").innerText = "चन्द्रमा " + String(rashi) + " राशि में ";
+  document.getElementById("rashyant").innerText = window.col13 + " बजे तक तदुपरान्त ";
+  document.getElementById("rashi2").innerText = "चन्द्रमा " + String(rashi2) + " राशि में सुर्योदयपर्यन्त";
+}
+
+*/
+
+//Ritu mapping
+
+let suryaRashi = Number(col12.split(":")[0])+1*1;
+
+     if (suryaRashi == 13){
+      suryaRashi = 1*1;
+     }
+     const rituMap = { 11:"वसंत",12:"वसंत", 1:"ग्रीष्म", 2:"ग्रीष्म", 3:"वर्षा", 4:"वर्षा", 5:"शरद", 6:"शरद", 7:"हेमंत",8:"हेमंत", 9:"शिशिर", 10:"शिशिर" };
+  if(suryaRashi && rituMap[suryaRashi])
+    document.getElementById("ritu").innerText = rituMap[suryaRashi];
+
+
+
+
+
+
+
+
+  // *** ONLY nakshatra mapping (no rashi mapping) ***
+ // setNakshatraOnly(window.col16);
+  if (window.col3 === "24:00:00" ){
+    document.getElementById("tithi").innerText = "प्रतिपदा";
+    document.getElementById("paksha").innerText ="शुक्लपक्ष";
+  }
+
+//Vikram Samvat computation
+// Convert DD/MM/YYYY to Date object
+// Convert DD/MM/YYYY to Date object
+let parts = selectedDate.split("/");
+let day = parseInt(parts[0], 10);
+let month = parseInt(parts[1], 10) - 1; // JS month index
+let year = parseInt(parts[2], 10);
+
+// Create JS date
+let d = new Date(year, month, day);
+
+// Create the boundary date: 20 March of the SAME YEAR
+let oldYearBoundary = new Date(2026, 2, 20);  // 11 = December
+let newYearBoundary = new Date(year, 2, 20);  // 2 = March
+
+// More precise Vikram Samvat calculation
+let vsYear;
+
+// If date is before 20 March → +56 (old VS year)
+// If date is on/after 20 March → +57 (new VS year)
+if (d < oldYearBoundary) {
+  vsName = "सिद्धार्थ नामक संवत्सर";
+} else {
+  vsName = "दुर्मति नामक संवत्सर";
+}
+if (d < newYearBoundary) {
+    vsYear = year + 56;
+   // vsName = "सिद्धार्थ नामक संवत्सर";
+} else {
+    vsYear = year + 57;
+   // vsName = "दुर्मति नामक संवत्सर";
+}
+
+document.getElementById("vSamvat").innerText = vsYear + ' "' + vsName + '" ';
+//document.getElementById("SSamvat").innerText = (year - 789);
+document.getElementById("gc_container").style.display = "none";
+
+
+
+
+
+
+  // convert ASCII digits inside govindji to Devanagari (after DOM updated)
+  const devanagariDigits = ['०','१','२','३','४','५','६','७','८','९'];
+  function convertToDevanagari(str){ return String(str).replace(/\d/g, d => devanagariDigits[d]); }
+  function replaceDigits(node){
+    node.childNodes.forEach(n => {
+      if(n.nodeType === Node.TEXT_NODE){
+        n.textContent = convertToDevanagari(n.textContent);
+      } else {
+        replaceDigits(n);
+      }
+    });
+  }
+  replaceDigits(document.getElementById("panchangam"));
+  document.getElementById("panchangam").style.display ="block";
+  const textToCopy = document.getElementById("panchangam").innerText;
+   navigator.clipboard.writeText(textToCopy);
+
+
+}
+
+function copyDivText() {
+       // Get the div element by its ID
+       const divToCopy = document.getElementById('panchangam');
+
+       // Get the inner text content of the div
+       const textToCopy = divToCopy.innerText;
+
+       // Use the Clipboard API to write the text to the clipboard
+       navigator.clipboard.writeText(textToCopy)
+           .then(() => {
+               alert('Text copied to clipboard!');
+           })
+           .catch(err => {
+               console.error('Failed to copy text: ', err);
+               alert('Failed to copy text.');
+           });
+   }
+
+
+/* show chakra button */
+function displayChakra(){ 
+  document.getElementById("panchangam").style.display = "none";
+  document.getElementById("result").style.display = "none";
+  document.getElementById("gc_container").style.display = "block"; 
+  renderCurrentStyle(); }
+
+/* ------------------- Graha engine (unchanged logic mostly) ------------------- */
+
+/* helpers already used by drawing code */
+window.parseSectorAngle = window.parseSectorAngle || function(str){
+  if(!str) return NaN; str = String(str).trim();
+  if(str.includes(':') && str.includes('°')){
+    try{
+      let [sec, rest] = str.split(':');
+      let [dg, rm] = rest.split('°');
+      let mn = (rm.split("'")[0])||'0';
+      let sc = (rm.split("'")[1]||'0').replace(/[^0-9.]/g,'')||'0';
+      const S = parseFloat(sec)||0;
+      const D = parseFloat(dg)||0;
+      const M = parseFloat(mn)||0;
+      const S2 = parseFloat(sc)||0;
+      return S*30 + D + M/60 + S2/3600;
+    }catch(e){ return NaN; }
+  }
+  return NaN;
+};
+
+window.parseAngleGeneric = window.parseAngleGeneric || function(str, isSector){
+  if(!str) return NaN; str = String(str).trim();
+  if(isSector){
+    const v = window.parseSectorAngle(str);
+    if(!isNaN(v)) return v;
+  }
+  if(str.includes('°')){
+    let [d,rest]=str.split('°'), m=0,s=0;
+    if(rest){ m = parseFloat((rest.split("'")[0])||0)||0; s = parseFloat((rest.split("'")[1]||'').replace(/[^0-9.]/g,''))||0; }
+    return (parseFloat(d)||0) + m/60 + s/3600;
+  }
+  const n = parseFloat(String(str).replace(/[^0-9.-]/g,''));
+  return isNaN(n)? NaN : n;
+};
+
+window.RASHI_NAMES = window.RASHI_NAMES || ['मेष','वृषभ','मिथुन','कर्क','सिंह','कन्या','तुला','वृश्चिक','धनु','मकर','कुम्भ','मीन'];
+window.NAK_NAMES = window.NAK_NAMES || ["अश्विनी","भरणी","कृतिका","रोहिणी","मृगशीरा","आर्द्रा","पुनर्वसू","पुष्य","आश्लेषा","मघा","पूर्वफाल्गुनी","उत्तरफाल्गुनी","हस्त","चित्रा","स्वाती","विशाखा","अनुराधा","ज्येष्ठा","मूल","पूर्वाषाढ़","उत्तराषाढ़","श्रवण","धनिष्ठा","शतभिषा","पूर्वभाद्रपद","उत्तरभाद्रपद","रेवती"];
+
+/* GC_PLANETS: include RAHU (col24), KETU special, and LAGNA special */
+window.GC_PLANETS = window.GC_PLANETS || [
+  {label:'सूर्य', col:17, color:'#8f0808', glyph:'☉'},
+  {label:'चन्द्र', col:18, color:'#90caf9', glyph:'☽'},
+  {label:'मंगल', col:19, color:'#e93e31', glyph:'♂'},
+  {label:'बुध',   col:20, color:'#8bc34a', glyph:'☿'},
+  {label:'गुरु',  col:21, color:'#ffeb3b', glyph:'♃'},
+  {label:'शुक्र', col:22, color:'#ffff', glyph:'♀'},
+  {label:'शनि',  col:23, color:'#2724ef', glyph:'♄'},
+  {label:'राहु', col:24, color:'#0c0c0c', glyph:'☊'}, // RAHU is col24
+  {label:'केतु', col:'KETU', color:'#0c0c0c', glyph:'☋'}, // KETU special (Rahu + 180)
+  {label:'लग्न', col:'LAGNA', color:'#000', glyph:'▲'}   // LAGNA special
+];
+
+/* -------------------- Tooltip (robust, DPR aware) -------------------- */
+function attachTooltip(canvas, planets){
+  // remove old listeners if any to avoid duplicates
+  if(canvas.__gc_tooltip_handler){
+    canvas.removeEventListener('mousemove', canvas.__gc_tooltip_handler);
+    canvas.removeEventListener('mouseleave', canvas.__gc_tooltip_leave);
+    canvas.__gc_tooltip_handler = null;
+    canvas.__gc_tooltip_leave = null;
+  }
+
+  const dpr = window.devicePixelRatio || 1;
+  let tt = document.getElementById('gc_tooltip');
+  if(!tt){
+    tt = document.createElement('div');
+    tt.id='gc_tooltip';
+    document.body.appendChild(tt);
+    Object.assign(tt.style,{position:'absolute',pointerEvents:'none',display:'none',background:'rgba(0,0,0,0.82)',color:'#fff',padding:'6px 8px',borderRadius:'6px',fontSize:'13px',zIndex:99999});
+  }
+
+  const handler = function(ev){
+    const rect = canvas.getBoundingClientRect();
+    const mx_css = ev.clientX - rect.left;
+    const my_css = ev.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const scale = (scaleX + scaleY)/2;
+
+    let best=null, dmin=Infinity;
+    for(const p of planets){
+      if(!p._pos) continue;
+      // p._pos might be in canvas pixels; convert to CSS coords for comparison
+      let px = p._pos.x / scale;
+      let py = p._pos.y / scale;
+      const dx = px - mx_css, dy = py - my_css;
+      const d = Math.hypot(dx,dy);
+      if(d < dmin){ dmin = d; best = p; }
+    }
+
+    const hitRadiusCss = Math.max(10, Math.min(rect.width, rect.height) * 0.035);
+    if(best && dmin <= hitRadiusCss){
+      tt.style.display = 'block';
+      tt.style.left = (ev.pageX + 12) + 'px';
+      tt.style.top  = (ev.pageY + 12) + 'px';
+      const deg = best._pos && best._pos.deg ? best._pos.deg : NaN;
+      const rashiIdx = Number.isFinite(deg) ? Math.floor(((deg%360)+360)%360 / 30) : '';
+      const degInt = Number.isFinite(deg) ? Math.floor(deg) : '';
+      const minPart = Number.isFinite(deg) ? Math.round(((deg % 1)||0) * 60) : '';
+      tt.innerHTML = `<strong>${best.label}</strong><br>${degInt}° ${minPart}'<br>राशि: ${window.RASHI_NAMES[rashiIdx]||''}`;
+    } else {
+      tt.style.display = 'none';
+    }
+  };
+
+  const leave = function(){ const t=document.getElementById('gc_tooltip'); if(t) t.style.display='none'; };
+
+  canvas.addEventListener('mousemove', handler);
+  canvas.addEventListener('mouseleave', leave);
+  canvas.__gc_tooltip_handler = handler;
+  canvas.__gc_tooltip_leave = leave;
+}
+
+/* -------------------- Lagna calculator (unchanged) -------------------- */
+function computeLagna(dateObj, sunriseStr, sunDeg, latDeg, lonDeg) {
+  if (!dateObj || !sunriseStr || isNaN(sunDeg)) return NaN;
+  let [h,m,s] = sunriseStr.split(":").map(Number);
+  if (isNaN(h)) return NaN;
+  const sunriseHours = h + m/60 + (s||0)/3600;
+  let Y = dateObj.getUTCFullYear();
+  let M = dateObj.getUTCMonth() + 1;
+  let D = dateObj.getUTCDate() + (sunriseHours / 24);
+  if (M <= 2) { Y -= 1; M += 12; }
+  const A = Math.floor(Y/100);
+  const B = 2 - A + Math.floor(A/4);
+  const JD = Math.floor(365.25*(Y+4716)) + Math.floor(30.6001*(M+1)) + D + B - 1524.5;
+  const d = JD - 2451545.0;
+  let GMST = 280.46061837 + 360.98564736629 * d;
+  GMST = ((GMST % 360) + 360) % 360;
+  let LST = GMST + lonDeg;
+  LST = ((LST % 360) + 360) % 360;
+  const sunLong = sunDeg * Math.PI/180;
+  const eps = 23.439291 * Math.PI/180;
+  const RA = Math.atan2(Math.sin(sunLong)*Math.cos(eps), Math.cos(sunLong));
+  let RAdeg = RA*180/Math.PI;
+  RAdeg = ((RAdeg % 360)+360)%360;
+  let H = LST - RAdeg;
+  H = ((H % 360)+360)%360;
+  const Hrad = H * Math.PI/180;
+  const latRad = latDeg * Math.PI/180;
+  const ascRad = Math.atan2(-Math.cos(Hrad), Math.sin(latRad)*Math.sin(Hrad) - Math.cos(latRad)*Math.cos(Hrad));
+  let lagnaDeg = ascRad*180/Math.PI;
+  lagnaDeg = ((lagnaDeg % 360)+360)%360;
+  return lagnaDeg;
+}
+
+/* -------------------- DRAW CIRCULAR (south) -------------------- */
+function drawCircularChakra(canvas){
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const size = Math.min(rect.width || 480, 720); // max 720px
+
+  canvas.width = Math.round(size * dpr);
+  canvas.height = Math.round(size * dpr);
+  canvas.style.width = size + "px";
+  canvas.style.height = size + "px";
+
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const cx = size/2, cy = size/2;
+  const R_outer = size * 0.45;
+  const R_inner = size * 0.39;
+  const N_outer = R_inner;
+  const N_inner = size * 0.33;
+  const rashiColors = ['#ff8a9a','#f3b07a','#ffd66f','#c7e29a','#9fe0a7','#81c4d9','#c9a3e8','#f7a1d1','#ffd9a6','#ffc1c1','#d6f1c6','#e7c7ff'];
+  const nakColors = ["#f4cccc","#fce5cd","#fff2cc","#d9ead3","#d0e0e3","#cfe2f3","#d9d2e9","#ead1dc","#ffe599","#b6d7a8","#a2c4c9","#9fc5e8","#b4a7d6","#d5a6bd","#f9cb9c","#cfe2f3","#ead1dc","#fff2cc","#d9ead3","#c9daf8","#d0e0e3","#d9d2e9","#f4cccc","#fce5cd","#fff2cc","#d9ead3","#d0e0e3"];
+  ctx.clearRect(0,0,size,size);
+  ctx.fillStyle = '#f5e2b0'; ctx.fillRect(0,0,size,size);
+
+  // 12 rashi annulus
+  for(let i=0;i<12;i++){
+    const startDeg = i * 30;
+    const endDeg   = (i+1) * 30;
+    const a1 = ( - startDeg ) * Math.PI/180;
+    const a2 = ( - endDeg   ) * Math.PI/180;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R_outer, a1, a2, true);
+    ctx.arc(cx, cy, R_inner, a2, a1, false);
+    ctx.closePath();
+    ctx.fillStyle = rashiColors[i % rashiColors.length];
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + R_outer*Math.cos(a2), cy + R_outer*Math.sin(a2));
+    ctx.lineTo(cx + R_inner*Math.cos(a2), cy + R_inner*Math.sin(a2));
+    ctx.strokeStyle = '#000'; ctx.lineWidth = Math.max(2.6, size*0.006); ctx.stroke();
+  }
+
+  // rashi labels
+  ctx.font = Math.max(12, size*0.03) + 'px Arial'; ctx.fillStyle = '#3a1a00'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const rashi = window.RASHI_NAMES;
+  for(let i=0;i<12;i++){
+    const midDeg = i*30 + 15; const aMid = (-midDeg) * Math.PI/180; const rText = (R_outer + R_inner)/2;
+    const tx = cx + rText * Math.cos(aMid); const ty = cy + rText * Math.sin(aMid);
+    ctx.save(); ctx.translate(tx, ty); ctx.rotate(aMid + Math.PI/2); ctx.fillText(rashi[i], 0, 0); ctx.restore();
+    const hx = cx + (R_outer + size*0.06) * Math.cos(aMid); const hy = cy + (R_outer + size*0.06) * Math.sin(aMid);
+    ctx.font = Math.max(10, size*0.02) + 'px Arial'; ctx.fillStyle = '#8a4b1c'; ctx.fillText(['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'][i], hx, hy);
+    ctx.fillStyle = '#3a1a00';
+  }
+
+  // 27 nakshatra annulus
+  for(let k=0;k<27;k++){
+    const sDeg = k * (360/27); const eDeg = (k+1) * (360/27);
+    const a1 = (-sDeg) * Math.PI/180; const a2 = (-eDeg) * Math.PI/180;
+    ctx.beginPath(); ctx.arc(cx, cy, N_outer, a1, a2, true); ctx.arc(cx, cy, N_inner, a2, a1, false); ctx.closePath();
+    ctx.fillStyle = nakColors[k % nakColors.length]; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx + N_outer*Math.cos(a2), cy + N_outer*Math.sin(a2)); ctx.lineTo(cx + N_inner*Math.cos(a2), cy + N_inner*Math.sin(a2));
+    ctx.strokeStyle = '#000'; ctx.lineWidth = Math.max(1.2, size*0.0035); ctx.stroke();
+  }
+
+  // nakshatra labels (radial spoke style, inside inner edge)
+  ctx.font = Math.max(9, size*0.016) + 'px Arial'; ctx.fillStyle = '#4b2b00';
+  const nak = window.NAK_NAMES;
+  for(let k=0;k<27;k++){
+    const startDeg = k*(360/27); const endDeg = (k+1)*(360/27); const midDeg = (startDeg + endDeg)/2;
+    const aMid = (-midDeg) * Math.PI/180; const labelR = N_inner - size*0.02;
+    const lx = cx + labelR * Math.cos(aMid); const ly = cy + labelR * Math.sin(aMid);
+    ctx.save(); ctx.translate(lx, ly); ctx.rotate(aMid); ctx.textAlign = 'center'; ctx.fillText(`${nak[k]} ${String(k+1).padStart(2,'0')}`, 0, 0); ctx.restore();
+  }
+
+  // center dot
+  ctx.beginPath(); ctx.arc(cx,cy,2,0,Math.PI*2); ctx.fillStyle='#6b3e1a'; ctx.fill();
+
+  // planets drawing (RAHU from col24, KETU = RAHU +180, LAGNA special)
+  const planets = window.GC_PLANETS || [];
+  for(const p of planets){
+    let deg;
+    if(p.col === 'LAGNA'){
+      deg = window.colLAGNA;
+    } else if(p.col === 'KETU'){
+      const rahuDeg = window.parseAngleGeneric(window['col24'], true);
+      if(isNaN(rahuDeg)) { p._pos = null; continue; }
+      deg = (rahuDeg + 180) % 360;
+    } else {
+      const raw = window['col'+p.col];
+      deg = window.parseAngleGeneric(raw, p.col===17 || p.col===18);
+    }
+    if(isNaN(deg)){ p._pos = null; continue; }
+    const a = (-deg) * Math.PI/180;
+    const px = cx + R_outer * Math.cos(a);
+    const py = cy + R_outer * Math.sin(a);
+    // ray
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py); ctx.strokeStyle='rgba(80,40,10,0.18)'; ctx.lineWidth=1; ctx.stroke();
+    // marker
+    ctx.beginPath(); ctx.arc(px,py, Math.max(6, size*0.018), 0, Math.PI*2); ctx.fillStyle = p.color; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=1; ctx.stroke();
+    // label
+    ctx.font = Math.max(10, size*0.018) + 'px Arial'; ctx.fillStyle = '#000'; ctx.textAlign='left';
+    ctx.fillText(`${p.label} ${Math.floor(deg)}°`, px + size*0.02, py);
+    p._pos = { x: px, y: py, deg: deg };
+  }
+
+  // attach tooltip (DPI-aware)
+  attachTooltip(canvas, planets);
+}
+
+/* -------------------- NORTH diamond -------------------- */
+function drawNorthKundli(canvas){
+  const img = document.getElementById("north_bg");
+  if(!img || !canvas) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const size = img.clientWidth;
+
+  canvas.width  = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width  = size + "px";
+  canvas.style.height = size + "px";
+
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,size,size);
+
+  const cx = size/2, cy = size/2;
+
+  // ✅ HOUSE COORDS MATCHING YOUR IMAGE EXACTLY (by eye measurement)
+  const H = [
+    {x:cx,         y:size*0.12},   // H1 top
+    {x:size*0.75,  y:size*0.23},   // H2
+    {x:size*0.88,  y:cy},          // H3
+    {x:size*0.75,  y:size*0.78},   // H4
+    {x:cx,         y:size*0.90},   // H5 bottom
+    {x:size*0.25,  y:size*0.78},   // H6
+    {x:size*0.12,  y:cy},          // H7
+    {x:size*0.25,  y:size*0.23},   // H8
+    {x:size*0.38,  y:size*0.33},   // H9
+    {x:size*0.62,  y:size*0.33},   // H10
+    {x:size*0.62,  y:size*0.63},   // H11
+    {x:size*0.38,  y:size*0.63}    // H12
+  ];
+
+  // ✅ Lagna calculation
+  let lagnaDeg = Number(window.colLAGNA);
+  if(isNaN(lagnaDeg)) lagnaDeg = 0;
+
+  // ✅ Planet plotting
+  const placed = [];
+
+  GC_PLANETS.forEach(p=>{
+    let deg;
+
+    if(p.col==="LAGNA") deg = lagnaDeg;
+    else if(p.col==="KETU"){
+      const rahu = window.parseAngleGeneric(window.col24,true);
+      if(isNaN(rahu)) return;
+      deg = (rahu+180)%360;
+    }
+    else{
+      deg = window.parseAngleGeneric(window["col"+p.col], true);
+    }
+
+    if(isNaN(deg)) return;
+
+    const offset = ((deg - lagnaDeg) % 360 + 360) % 360;
+    const house = Math.floor(offset / 30);
+    const pt = H[house];
+
+    // stack if multiple planets
+    if(!pt._n) pt._n = 0;
+    const dx = (pt._n % 2) * 16;
+    const dy = Math.floor(pt._n / 2) * 18;
+    pt._n++;
+
+    // draw planet
+    ctx.beginPath();
+    ctx.arc(pt.x + dx, pt.y + dy, size*0.030, 0, Math.PI*2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = size*0.030 + "px Arial";
+    ctx.fillStyle = "#000";
+    ctx.fillText(p.label, pt.x + dx - 12, pt.y + dy + size*0.055);
+
+    placed.push({
+      label:p.label,
+      _pos:{x:pt.x+dx, y:pt.y+dy, deg:deg, house:house+1}
+    });
+  });
+
+  attachTooltip(canvas, placed);
+}
+
+/* -------------------- Render switch and export -------------------- */
+function renderCurrentStyle(){
+  const style = document.getElementById("gc_style").value;
+  const canvas = document.getElementById("gc_canvas");
+
+const bg = document.getElementById("north_bg");
+
+if(style === "south"){
+  drawCircularChakra(canvas);
+}
+else{
+  bg.style.display = "block";  // show image
+  drawNorthKundli(canvas);
+}
+
+}
+
+
+/* export png */
+document.getElementById('gc_export').addEventListener('click', function(){
+  const canvas = document.getElementById('gc_canvas');
+  // ensure latest render
+  renderCurrentStyle();
+  const url = canvas.toDataURL('image/png');
+  const a = document.createElement('a'); a.href = url; a.download = 'graha_chakra.png'; a.click();
+});
+
+document.getElementById('panchangam_export').addEventListener('click', function(){
+  const panchang = document.getElementById('panchangam');
+  // ensure latest render
+  searchData();
+  const url = panchang.toDataURL('image/png');
+  const a = document.createElement('a'); a.href = url; a.download = 'panchangam.png'; a.click();
+});
+
+/* hide chart */
+document.getElementById('gc_hide').addEventListener('click', function(){
+  document.getElementById('gc_container').style.display = 'none';
+});
+
+/* redraw when style changed */
+document.getElementById('gc_style').addEventListener('change', function(){
+  renderCurrentStyle();
+});
+
+/* Attach hook so searchData triggers chart render (keeps your original pattern) */
+(function attachHook(){
+  if(typeof window.searchData === 'function' && !window.__graha_circular_hooked){
+    const orig = window.searchData;
+    window.searchData = function(){
+      const r = orig.apply(this, arguments);
+      setTimeout(()=>{ try{ document.getElementById('gc_container'); renderCurrentStyle(); }catch(e){} }, 120);
+      return r;
+    };
+    window.__graha_circular_hooked = true;
+  } else if(!window.__graha_circular_hooked){
+    setTimeout(attachHook, 200);
+  }
+})();
+
+/* also allow manual quick test if data already present */
+setTimeout(()=>{ try{ if(window.col17!==undefined) renderCurrentStyle(); }catch(e){} }, 600);
+
+</script>
+</body>
+</html>

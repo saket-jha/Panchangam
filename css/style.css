@@ -1,0 +1,133 @@
+#panchangam {
+    display: none;
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 236 / 419; /* exact image ratio */
+    margin: 10px auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* background image using <img> for perfect centering */
+#panchangam .bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;          /* like background-size: cover */
+    object-position: 50% 60%;   /* ⭐ PERFECT VISUAL CENTER FOR YOUR IMAGE */
+}
+
+/* white wash */
+#panchangam .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.7);
+}
+
+/* content stays above */
+#panchangam .content {
+    position: absolute;
+    inset: 0;
+    padding: 18px;
+    text-align: center;
+    z-index: 2;
+    font-weight: bold;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    #panchangam .content {
+        padding: 12px;     /* smaller padding on mobile */
+    }
+}
+#panchangam p {
+    margin: 0;
+    padding: auto;
+    color: #333;
+}
+#panchangam .heading {
+    font-weight: bolder;
+    text-align: left;
+    color: #007bff;
+    font-size: large;
+}
+#panchangam .value {
+    font-weight: bold;
+    color: #333333;
+    font-size: large;
+}
+
+
+
+.layout-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;   /* ⭐ ensures LEFT and RIGHT start at TOP */
+    gap: 10px;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-top: 20px;
+}
+
+/* LEFT PANEL */
+.info-panel {
+    width: 280px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    height: auto;
+}
+
+/* RIGHT PANEL (main content) */
+.main-panel {
+    flex: 1;                    /* takes remaining width */
+    text-align: center;         /* center main UI as in screenshot */
+}
+
+.info2-panel {
+  width: 280px;
+}
+
+
+@media (max-width: 768px) {
+    .layout-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .main-panel {
+        order: 1;
+        width: 95%;
+        max-width: none;
+    }
+
+    .info-panel {
+        order: 2;
+        width: 95%;
+    }
+
+    .info2-panel {
+        order: 3;
+        width: 95%;
+    }
+}
+
+
+
+
+  #gc_container{
+    display:none; margin-top:20px;padding:12px;border-radius:30px;
+    /* background:#f9e0a6;border:1px solid #e0b86a; */
+    background:#fff;border:1px solid #ffffff;}
+  #gc_controls{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+  #gc_canvas_wrap{position:relative}
+  #gc_canvas{width:100%;height:auto;display:block;background:transparent}
+  #gc_tooltip{position:absolute;pointer-events:none;display:none;background:rgba(0,0,0,0.85);color:#fff;padding:6px 9px;border-radius:6px;font-size:13px;z-index:9999;}
+  .gc_btn{padding:6px 10px;border:0;border-radius:6px;background:#7b3f00;color:#f4eeee;cursor:pointer;}
+  .gc_sel{padding:6px;border-radius:6px}
