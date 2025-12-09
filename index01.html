@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <script src="header.js"></script>
-<link rel="stylesheet" href="./css/style.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>श्रीसूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
+<title>सूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  body{align-items: center; align-content: center; text-align: center; font-size: larger; font-family:Arial,Helvetica,sans-serif;margin:30px;background:#ffffff;align-content: center;font-weight: bolder;}
+  body{text-align: center; font-size: larger; font-family:Arial,Helvetica,sans-serif;margin:30px;background:#f8f8f7;align-content: center;font-weight: bolder;}
   input,select,button{margin:6px 0;padding:8px;border:1px solid #ccc;border-radius:6px;}
   button{background:#007bff;color:#fff;cursor:pointer;}
   button:hover{background:#0056b3;}
@@ -16,20 +15,28 @@
           box-shadow:0 0 10px rgba(0,0,0,0.1);}
   b{color:#007bff;}
 </style>
+<style>
+  /* Initially hide the div */
+  #dwivediJi {
+    display: none;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+    border-radius: 8px;
+  }
+  #gc_container{display:none;margin-top:20px;padding:12px;border-radius:10px;background:#f9e0a6;border:1px solid #e0b86a;}
+  #gc_controls{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+  #gc_canvas_wrap{position:relative}
+  #gc_canvas{width:100%;height:auto;display:block;background:transparent}
+  #gc_tooltip{position:absolute;pointer-events:none;display:none;background:rgba(0,0,0,0.85);color:#fff;padding:6px 9px;border-radius:6px;font-size:13px;z-index:9999;}
+  .gc_btn{padding:6px 10px;border:0;border-radius:6px;background:#7b3f00;color:#f4eeee;cursor:pointer;}
+  .gc_sel{padding:6px;border-radius:6px}
+</style>
 </head>
 <body>
-  <div class="layout-container">
-    <div class="info-panel">
-        <!-- Your left panel content here -->
-         <div style="color: #000000;background-color: #ffffff;font-size: 14px;font-family: Consolas, 'Courier New', monospace;"><span style="color: #cccccc;"><span style="color: rgb(44, 130, 201);"><strong><span style="font-size: 17px;">
-            ॥ श्री सूर्यसिद्धान्तः शुद्ध शास्त्रीय ॥</span></strong></span><span style="color: #000000;"><br></span><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">एक वैदिक-पौराणिक-ज्योतिषीय विवेचन:</span></strong></span><br><span style="color: #000000;">भारतीय कालगणना में&nbsp;<strong>आज</strong> दो पद्धतियाँ प्रचलित हैं&mdash;<br><span style="color: #000000;">१. सूर्यसिद्धान्त पर आधारित पारम्परिक पञ्चाङ्ग</span></span><br><span style="color: #000000;">२. दृक्-पक्षीय पञ्चाङ्ग (Drik Panchang)</span><br><span style="color: #000000;">आधुनिक काल में कई विद्वान ग्रहों की तत्कालीन <strong>भौतिक</strong> खगोलीय गति (real-time ephemeris) पर आधारित दृक्-पक्ष को वैज्ञानिक मान लेते हैं; परन्तु शास्त्रीय आधार पर पञ्चाङ्ग-निर्णय का मूल प्रमाण सूर्यसिद्धान्त ही माना गया है। शास्त्र का उद्देश्य <strong>देव-काल, ऋतु-चक्र, धर्म-कर्म और ब्रह्माण्डीय लय</strong> को यथावत् रूप में ग्रहण करना है&mdash;न कि केवल क्षणिक भौतिक स्थिति को।</span><br><span style="color: #000000;">इसीलिए शास्त्रीय परम्परा सर्वसम्मति से कहती है&mdash;<br></span><span style="color: rgb(44, 130, 201);"><strong>&ldquo;सौर्यम् सिद्धान्तं हि पञ्चाङ्गस्य मूलम्&rdquo;</strong></span><span style="color: #000000;"><br>अर्थात् सूर्यसिद्धान्त ही पञ्चाङ्ग का परम आधार है।</span><br><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">१. दैव-प्रणीतत्वम् &mdash; सूर्योपदिष्ट ज्ञान</span></strong></span><br><span style="color: #000000;">सूर्यसिद्धान्त का उद्गम दैविक बताया गया है&mdash;</span><br><span style="color: #000000;">सूर्यदेव ने यह ज्ञान मयदानव को उपदिष्ट किया।</span><br><span style="color: #000000;">यह शास्त्र ऋषि-परम्परा में संरक्षित रहा।</span><br><span style="color: #000000;">इसे <strong>&ldquo;दैव-निर्मित काल-सूत्र&rdquo;</strong> कहा गया।</span><br><span style="color: #000000;">दूसरी ओर दृक्-पक्ष आधुनिक वैज्ञानिक उपकरणों पर आधारित है, जिनका दैव-प्रमाण या ऋषि-मत से कोई सम्बन्ध नहीं।अतः धर्म-कर्म के दृष्टि से दृक् पञ्चाङ्ग अर्थहीन है ।</span><br><span style="color: #000000;">शास्त्र कहता है&mdash;&nbsp;</span><span style="color: rgb(226, 80, 65);"><strong>&ldquo;दैवम् हि कालः&rdquo;</strong></span><span style="color: #000000;">&nbsp;&ndash; काल स्वयं देवस्वरूप है। जब काल देवतामय है, तो उसकी गणना भी <strong>दैव-प्रणीत सिद्धान्त</strong> से ही&nbsp;<strong>शुद्ध</strong> होगी।<br></span><br><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">२. शास्त्रीय निर्देश</span></strong></span><span style="color: #000000;">&nbsp;<br>तिथि-नक्षत्र आदि सूर्यसिद्धान्तीय होने चाहिए</span><br><span style="color: #000000;">धर्मशास्त्रों में स्पष्ट कहा है&mdash;</span><br><span style="color: #000000;"><strong>&ldquo;तिथीनां गणना सिद्धान्ते&rdquo; &ldquo;नक्षत्रादिनां निर्णयः सूर्यसिद्धान्ते स्थापितम्&rdquo;</strong></span><br><span style="color: #000000;">अर्थात् तिथि, नक्षत्र, योग, करण आदि का निर्णय सूर्यसिद्धान्तीय सूत्रों द्वारा ही शुद्ध माना जाता है।</span><br><span style="color: #000000;">दृक्-पक्षीय पञ्चाङ्ग इस शास्त्रीय नियम का पालन नहीं करता,क्योंकि वह भौतिक खगोलीय आँकड़े लेता है, न कि शास्त्रसम्मत सविता देवता पर आधारित गणना।</span><br><span style="color: #000000;">इस प्रकार दृक् पञ्चाङ्ग शास्त्रीय प्रमाण का अधिकार नहीं रखता, जबकि सूर्यसिद्धान्त शास्त्र प्रदत्त सर्वोच्च प्रमाण है।<br></span><br><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">३. </span></strong><span style="font-size: 15px;"><strong>धर्म-कर्म में &ldquo;सिद्धान्त शुद्धि&rdquo; अपेक्षित है, न कि &ldquo;दृक्-क्षणिकता&rdquo;</strong></span></span><br><span style="color: #000000;">वैदिक कर्मकाण्ड में दिव्य काल की गणना चाहिए, न कि भौतिक, परिक्षणीय काल।</span><br><span style="color: #000000;">यज्ञ, जप, संस्कार आदि के फल भौतिक खगोलीय स्थिति पर निर्भर नहीं,</span><br><span style="color: #000000;">अपितु दैव-नियत कालचक्र पर निर्भर हैं।</span><br><span style="color: #000000;">सूर्यसिद्धान्त की गति दैव-नियत और स्थिर है। इससे प्राप्त पञ्चाङ्ग ऋतुमय, सृष्टिचक्रानुगत और वैदिक अनुकूल होता है।<br></span><br><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">४. सूर्यसिद्धान्त ऋतु-चक्र और देव-काल के संगत; दृक्-पक्ष केवल भौतिक</span></strong></span><br><span style="color: #000000;">धर्मशास्त्र कहता है&mdash;&ldquo;ऋतवः देवकर्मसु प्रधानाः।&rdquo;</span><br><span style="color: #000000;">ऋतु-निर्णय सूर्य की दीर्घवृत्तीय गति पर आधारित है, जिसे सूर्यसिद्धान्त अत्यन्त सूक्ष्मता से प्रकट करता है।&nbsp;</span><br><br><br><span style="color: #000000;">श्राद्ध, संस्कार, यज्ञ, पूजा,&nbsp;व्रत-नियम, संक्रान्ति,&nbsp;नक्षत्र-विधान, ऋतु परिवर्तन,&nbsp;उत्सव व देवकाल&nbsp;इनका आधार दैव-नियत काल है, न कि सूर्य-चन्द्र की भौतिक स्थिति।</span><br><span style="color: #000000;">उदाहरण:</span><br><span style="color: #000000;">शकुन-विधि</span><br><span style="color: #000000;">विवाहादि शुभ-मुहूर्त</span><br><span style="color: #000000;">श्राद्ध-तिथि</span><br><span style="color: #000000;">ग्रहशान्ति विधान</span><br><span style="color: #000000;">इन सभी में शास्त्रीय निर्देश सूर्यसिद्धान्त को ही प्रमाण मानते हैं। दृक्-पक्ष इन धार्मिक शास्त्रों के अनुकूल नहीं है।<br></span><br><br><span style="color: rgb(226, 80, 65);"><strong><span style="font-size: 15px;">५. परम्परा&ndash;सिद्धता</span></strong></span><br><span style="color: #000000;">भारतीय पंचांग परम्परा&nbsp;</span><span style="color: #000000;">सहस्राब्दियों से सूर्यसिद्धान्त पर आधारित हैं।</span><br><span style="color: #000000;">दृक्-पक्ष मात्र 100&ndash;120 वर्ष पुराना आधुनिक प्रयास है। ऐसे अल्पकालीन प्रयोग को शास्त्रीय परम्परा पर सर्वोपरि नहीं किया जा सकता।</span></div>
 
-
-    </div>
-    <div class="main-panel">
-      <!-- Your left panel content here -->
-       <h1 style="text-align: center; font-size: larger;">सूर्यसिद्धान्तीय पञ्चाङ्गम् </h1>
-
+<h1 style="text-align: center; font-size: larger;">सूर्यसिद्धान्तीय पञ्चाङ्गम् </h1>
 
 <input type="file" id="excelFile" style="display:none" accept=".xlsx,.xls" />
 <select id="fileLink">
@@ -48,40 +55,12 @@
   <label style="font-size: larger;">आङ्ग्ल दिनाङ्क चुनें</label><br>
   <input type="date" style="font-size: larger;" id="datePicker" /><br><br>
   <button onclick="searchData()" style="font-size: larger;">पञ्चाङ्ग</button>
-  <button onclick="searchData();displayChakra()" style="font-size: larger;">चक्र देखें</button>
+  <button onclick="displayChakra()" style="font-size: larger;">चक्र देखें</button>
 </div>
 
 <h3 style="text-align: center; font-size: larger;">चयनित दिनाङ्क का पञ्चाङ्ग</h3>
 <div id="result" style="text-align: center; font-size: larger;"></div>
-<button id="panchangam_export" class="gc_btn">Export PNG</button>
-<div id="panchangam">
-  <img class="bg-img" src="./images/suryadev.jpg" />
-  <div class="overlay"></div>
-  <div class="content">
-  <p>॥ॐ श्रीगणेशाय नम:॥</p>
-  <p>॥श्रीसूर्यसिद्धान्तीय 🌞 पञ्चाङ्ग॥</p>  
-  <p><span id="nDinaank" class="heading">दिनांक: </span><span id="dinaank" class="value"></span> ई०</p>
-  <p><span id="nVSamvat" class="heading">विक्रम सम्वत: </span> <span id="vSamvat" class="value" ></span></p>
-  <p><span id="nSSamvat" class="heading">शक सम्वत: </span> १९४७</p>
-  <p><span id="nRitu" class="heading">ऋतु: </span><span id="ritu" class="value" ></span></p>
-  <p><span id="nMaasPaksha" class="heading">मास व पक्ष: </span><span id="maas"  class="value"></span>&nbsp;<span id="paksha"  class="value"></span></p>
-  <p><span id="nDin" class="heading">वार: </span><span id="din" class="value"></span></p>
-  <p><span id="nTithi" class="heading">तिथि: </span><span id="tithi" class="value"></span> (<span id="tithyant" class="value"></span> बजे तक)</p>
-  <p><span id="nNakshatra" class="heading">नक्षत्र: </span><span id="nakshatra" class="value"></span> (<span id="nakshatraant" class="value"></span> बजे तक)</p>
 
-  <!-- Rashi spans remain in HTML but are NOT set by this script -->
-  <p><span id="nRashi" class="heading">राशि: </span> <span id="rashi" class="value"></span>&nbsp;<span id="rashyant" class="value"></span> <span id="rashi2" class="value"></span></span>)</p>
-
-  <p><span id="nKaran1" class="heading">करण १:</span><span id="karan" class="value"></span> (<span id="karanant1" class="value"></span> बजे तक)</p>
-  <p><span id="nKaran2" class="heading">करण २:</span> <span id="karan2" class="value"></span> (<span id="karanant2" class="value"></span> बजे तक)</p>
-  <p><span id="nKaran3" class="heading">करण ३:</span> <span id="karan3" class="value"></span> (सूर्योदयपर्यन्त)</p>
-
-  <p><span id="nYog" class="heading">योग: </span><span id="yog" class="value"></span> (<span id="yogant" class="value"></span> बजे तक)</p>
-  <p><span id="nSuryodaya" class="heading">सूर्योदय: </span><span id="suryodaya" class="value"></span> बजे</p>
-  <p><span id="nSuryast" class="heading">सूर्यास्त: </span><span id="suryast" class="value"></span> बजे</p>
-  <p><span id="nDikshool" class="heading">दिशाशूल: </span><span id="dikshool" class="value"></span></p>
-  <p>॥तन्मेमनः शिवसङ्कल्पमस्तु॥</p>
-</div></div>
 
 <!-- Chart container -->
 <div id="gc_container" >
@@ -103,15 +82,6 @@
     <div id="gc_tooltip"></div>
   </div>
 </div>
-
-    <div class="info2-panel">
-        <!-- Your right panel content here -->
-        © 2024 श्रीसूर्यसिद्धान्तीय पञ्चाङ्गम् |
-
-    </div>
-  </div>
-
-
 
 <script>
 /* ---------- Keep your original parsing helpers (unchanged) ---------- */
@@ -178,7 +148,7 @@ function searchData(){
     let val = row[i];
 
 
-    /*/ -----------------------------
+    // -----------------------------
     // DEVNAGARI CONVERSIONS (RESTORED)
     // -----------------------------
     // DAY NAME
@@ -224,7 +194,7 @@ function searchData(){
 
     // SPECIAL CASE — अहोरात्र
     if(i===13 && String(val).trim()==="0") val = "अहोरात्र";
-*/
+
     // --------------------------------
     // TIME LOGIC (RESTORED EXACTLY)
     // --------------------------------
@@ -244,8 +214,6 @@ function searchData(){
 
     window['col'+i] = val;
     out += `<b>${name}:</b> <span id="col${i}">${val}</span><br>`;
-    //out += "";
-
   }
   
 
@@ -303,237 +271,12 @@ function searchData(){
   resDiv.innerHTML = out;
 
   // ensure chart is visible and render according to selected style
-  document.getElementById('panchangam').style.display = 'block';
-  document.getElementById('result').style.display = 'none';
+  //document.getElementById('gc_container').style.display = 'block';
  // renderCurrentStyle();
- // document.getElementById("dinaank").innerText = selDate;
-  document.getElementById("maas").innerText = window.col1 || "";
-  document.getElementById("din").innerText = window.col2 || "";
-  document.getElementById("tithi").innerText = window.col3 || "";
-  document.getElementById("tithyant").innerText = window.col4 || "";
-  document.getElementById("yog").innerText = window.col5 || "";
-  document.getElementById("yogant").innerText = window.col6 || "";
-  document.getElementById("karan").innerText = window.col7 || "";
-  document.getElementById("karanant1").innerText = window.col8 || "";
-  //document.getElementById("rashi").innerText = rashi || "";
-  document.getElementById("karanant2").innerText = window.col9 || "";
- // document.getElementById("spashtSurya").innerText = window.col12 || "";
-  document.getElementById("suryodaya").innerText = window.col10 || "";
-  document.getElementById("suryast").innerText = window.col11 || "";
- // document.getElementById("rashyant").innerText = window.col13 || "";
-  document.getElementById("nakshatraant").innerText = window.col15 || "";
-
-  // day name mapping (if col2 has Sun/Mon etc.)
-  const dayMap = { Sun:"रविवार", Mon:"सोमवार", Tue:"मङ्गलवार", Wed:"बुधवार", Thu:"बृहस्पतिवार", Fri:"शुक्रवार", Sat:"शनिवार" };
-  if(window.col2 && dayMap[window.col2]) 
-  document.getElementById("din").innerText = dayMap[window.col2];
-
-// dishashool name mapping (if col2 has Sun/Mon etc.)
-  const dikshoolMap = { Sun:"पश्चिम", Mon:"पूरब", Tue:"उत्तर", Wed:"उत्तर", Thu:"दक्षिण", Fri:"पश्चिम", Sat:"पूरब" };
-  if(window.col2 && dikshoolMap[window.col2]) 
-  document.getElementById("dikshool").innerText = dikshoolMap[window.col2];
-
-
-  // nakshatra name mapping (if col2 has Sun/Mon etc.)
-  const nakshatraMap = { "1-Ashvini": "अश्विनी", "2-Bharani": "भरणी", "3-Krittikä": "कृत्तिका", "5-Mrigshirä": "रोहिणी", "6-Ärdrä": "मृगशिरा", "7-Punarvasu": "आर्द्रा", "8-Pušya": "पुनर्वसु", "9-Äshlešä": "पुष्य", "10-Maghä": "अश्लेषा", "11-1Phälguni": "मघा", "12-2Phälguni": "पूर्वाफाल्गुनी", "13-Hasta": "उत्तराफाल्गुनी", "14-Chiträ": "हस्त", "15-Sväti": "चित्रा", "15-Sväti": "स्वाती", "16-Vishäkhä": "विशाखा", "17-Anurädhä": "अनुराधा", "18-Jyešthä": "ज्येष्ठा", "19-Moola": "मुल", "20-1Äšädha": "पुर्वाषाढा", "21-2Äšädha": "उत्तरषाढा", "22-Shravana": "श्रवण", "23-Dhaništhä": "धनिष्ठा", "24-Shatbhiš": "शतभिषा", "25-1Bhädrpad": "पूर्वभाद्रपद", "26-2Bhädrpad": "उत्तरभाद्रपद", "27-Revati": "रेवती" };
-  if(window.col16 && nakshatraMap[window.col16]) 
-  document.getElementById("nakshatra").innerText = nakshatraMap[window.col16];
-
-  // yog name mapping (if col5 has 01:Viškambh etc.)
-  const yogMap = { "01:Viškambh": "विष्कुम्भ", "02:Preeti": "प्रीति", "03:Ayušmän": "आयुष्मान", "04:Saubhägy": "सौभाग्य", "05:Shobhan": "शोभन", "06:Atigand": "अतिगण्ड", "07:Sukarman": "सुकर्मा", "08:Dhriti": "धृति", "09:Shoola": "शूल", "10:Ganda": "गण्ड", "11:Vriddhi": "वृद्धि", "12:Dhruva": "ध्रुव", "13:Vyäghät": "व्याघात", "14:Haršan": "हर्षण", "15:Vajra": "वज्र", "16:Siddhi": "सिद्धि", "17:Vyatipät": "व्यतीपात", "18:Variyän": "वरीयान्", "19:Parigha": "परिघ", "20:Shiva": "शिव", "21:Siddha": "सिद्ध", "22:Sädhy": "साध्य", "23:Shubha": "शुभ", "24:Shukla": "शुक्ल", "25:Brahma": "ब्रह्म", "26:Indra": "इन्द्र", "27:Vædhrti": "वैधृति"};
-  if(window.col5 && yogMap[window.col5]) 
-  document.getElementById("yog").innerText = yogMap[window.col5];
-
- // day name mapping (if col2 has Sun/Mon etc.)
-  const karanMap = { "Bava": "बव", "Bälav": "बालव", "Kaulav": "कौलव", "Taitil": "तैतिल", "Gara": "गर", "Vanij": "वणिज", "Višti": "विष्टि (भद्रा)" };
-  // , "Shakun": "शकुनि", "Chatuš": "चतुष्पाद", "Näga": "नाग", "Kimstu": "किस्तुघ्न"
-  if(window.col7 && karanMap[window.col7]) 
-  document.getElementById("karan").innerText = karanMap[window.col7];
- // find next karan
- 
-      const keys = Object.keys(karanMap);
-      const currentIndex = keys.indexOf(window.col7);
-      const nextIndex = (currentIndex + 1) % keys.length; // wraps to start if last
-      const nextKey = keys[nextIndex];
-      const nextIndex1 = (currentIndex + 2) % keys.length; // wraps to start if last
-      const nextKey1 = keys[nextIndex1];
-
-      document.getElementById("karan2").innerText = karanMap[nextKey];
-      document.getElementById("karan3").innerText = karanMap[nextKey1];
-    
-
-
-  // numeric tithi -> name mapping (if applicable)
-  if(!isNaN(window.col3) && window.col3 !== "") {
-    const t = Number(window.col3);
-    const tithiNames = {
-      1:"प्रतिपदा",2:"द्वितीया",3:"तृतीया",4:"चतुर्थी",5:"पञ्चमी",6:"षष्ठी",7:"सप्तमी",
-      8:"अष्टमी",9:"नवमी",10:"दशमी",11:"एकादशी",12:"द्वादशी",13:"त्रयोदशी",14:"चतुर्दशी",15:"पूर्णिमा",
-      16:"प्रतिपदा",17:"द्वितीया",18:"तृतीया",19:"चतुर्थी",20:"पञ्चमी",21:"षष्ठी",22:"सप्तमी",
-      23:"अष्टमी",24:"नवमी",25:"दशमी",26:"एकादशी",27:"द्वादशी",28:"त्रयोदशी",29:"चतुर्दशी",30:"पूर्णिमा"
-    };
-    document.getElementById("tithi").innerText = tithiNames[t] || window.col3;
-    document.getElementById("paksha").innerText = (t <= 15 ? "शुक्लपक्ष" : "कृष्णपक्ष");
-  }
-
-
-    let rashi = Number(col14.split(":")[0])+1*1;
-    let rashi2 = Number(col14.split(":")[0])+2*1;
-
-     if (rashi2 == 13){
-      rashi2 = 1*1;
-     }
-
-
-     // rashi name mapping ( etc.)
-    const rashiMap = { 1:"मेष", 2:"वृषभ", 3:"मिथुन", 4:"कर्क", 5:"सिंह", 6:"कन्या", 7:"तुला", 8:"वृश्चिक", 9:"धनु", 10:"मकर", 11:"कुंभ", 12:"मीन"};
-    if(rashi && rashiMap[rashi]) 
-    document.getElementById("rashi").innerText = rashiMap[rashi];
-    if(rashi2 && rashiMap[rashi]) 
-    document.getElementById("rashi2").innerText = rashiMap[rashi2];
-
-
-
-
-     if (window.col13 === "00:00:00" ){
-      document.getElementById("rashi").innerText = "(चन्द्रमा *" + rashiMap[rashi] + " राशि* में अहोरात्र";
-      document.getElementById("rashyant").innerText = " ";
-      document.getElementById("rashi2").innerText = " ";
-     } else {
-     document.getElementById("rashi").innerText = "(चन्द्रमा *" + rashiMap[rashi] + " राशि* में ";
-     document.getElementById("rashyant").innerText = window.col13 + " बजे तक तदुपरान्त ";
-     document.getElementById("rashi2").innerText = "*" + rashiMap[rashi2] + " राशि* में ";
-
-     }
-    /*
-
-     let base = Number(col14.split(":")[0]);
-let rashi = base + 1;
-let rashi2 = base + 2;
-if (rashi2 === 13) rashi2 = 1;
-
-if (window.col13 === "00:00:00") {
-  document.getElementById("rashi").innerText = "चन्द्रमा " + rashi + " राशि में सुर्योदयपर्यन्त";
-  document.getElementById("rashyant").innerText = "";
-  document.getElementById("rashi2").innerText = "";
-} else {
-  document.getElementById("rashi").innerText = "चन्द्रमा " + String(rashi) + " राशि में ";
-  document.getElementById("rashyant").innerText = window.col13 + " बजे तक तदुपरान्त ";
-  document.getElementById("rashi2").innerText = "चन्द्रमा " + String(rashi2) + " राशि में सुर्योदयपर्यन्त";
 }
-
-*/
-
-//Ritu mapping
-
-let suryaRashi = Number(col12.split(":")[0])+1*1;
-
-     if (suryaRashi == 13){
-      suryaRashi = 1*1;
-     }
-     const rituMap = { 11:"वसंत",12:"वसंत", 1:"ग्रीष्म", 2:"ग्रीष्म", 3:"वर्षा", 4:"वर्षा", 5:"शरद", 6:"शरद", 7:"हेमंत",8:"हेमंत", 9:"शिशिर", 10:"शिशिर" };
-  if(suryaRashi && rituMap[suryaRashi])
-    document.getElementById("ritu").innerText = rituMap[suryaRashi];
-
-
-
-
-
-
-
-
-  // *** ONLY nakshatra mapping (no rashi mapping) ***
- // setNakshatraOnly(window.col16);
-  if (window.col3 === "24:00:00" ){
-    document.getElementById("tithi").innerText = "प्रतिपदा";
-    document.getElementById("paksha").innerText ="शुक्लपक्ष";
-  }
-
-//Vikram Samvat computation
-// Convert DD/MM/YYYY to Date object
-// Convert DD/MM/YYYY to Date object
-let parts = selectedDate.split("/");
-let day = parseInt(parts[0], 10);
-let month = parseInt(parts[1], 10) - 1; // JS month index
-let year = parseInt(parts[2], 10);
-
-// Create JS date
-let d = new Date(year, month, day);
-
-// Create the boundary date: 20 March of the SAME YEAR
-let oldYearBoundary = new Date(2026, 2, 20);  // 11 = December
-let newYearBoundary = new Date(year, 2, 20);  // 2 = March
-
-// More precise Vikram Samvat calculation
-let vsYear;
-
-// If date is before 20 March → +56 (old VS year)
-// If date is on/after 20 March → +57 (new VS year)
-if (d < oldYearBoundary) {
-  vsName = "सिद्धार्थ नामक संवत्सर";
-} else {
-  vsName = "दुर्मति नामक संवत्सर";
-}
-if (d < newYearBoundary) {
-    vsYear = year + 56;
-   // vsName = "सिद्धार्थ नामक संवत्सर";
-} else {
-    vsYear = year + 57;
-   // vsName = "दुर्मति नामक संवत्सर";
-}
-
-document.getElementById("vSamvat").innerText = vsYear + ' "' + vsName + '" ';
-//document.getElementById("SSamvat").innerText = (year - 789);
-document.getElementById("gc_container").style.display = "none";
-
-
-
-
-
-
-  // convert ASCII digits inside govindji to Devanagari (after DOM updated)
-  const devanagariDigits = ['०','१','२','३','४','५','६','७','८','९'];
-  function convertToDevanagari(str){ return String(str).replace(/\d/g, d => devanagariDigits[d]); }
-  function replaceDigits(node){
-    node.childNodes.forEach(n => {
-      if(n.nodeType === Node.TEXT_NODE){
-        n.textContent = convertToDevanagari(n.textContent);
-      } else {
-        replaceDigits(n);
-      }
-    });
-  }
-  replaceDigits(document.getElementById("panchangam"));
-  document.getElementById("panchangam").style.display ="block";
-  const textToCopy = document.getElementById("panchangam").innerText;
-   navigator.clipboard.writeText(textToCopy);
-
-
-}
-
-function copyDivText() {
-       // Get the div element by its ID
-       const divToCopy = document.getElementById('panchangam');
-
-       // Get the inner text content of the div
-       const textToCopy = divToCopy.innerText;
-
-       // Use the Clipboard API to write the text to the clipboard
-       navigator.clipboard.writeText(textToCopy)
-           .then(() => {
-               alert('Text copied to clipboard!');
-           })
-           .catch(err => {
-               console.error('Failed to copy text: ', err);
-               alert('Failed to copy text.');
-           });
-   }
-
 
 /* show chakra button */
 function displayChakra(){ 
-  document.getElementById("panchangam").style.display = "none";
-  document.getElementById("result").style.display = "none";
   document.getElementById("gc_container").style.display = "block"; 
   renderCurrentStyle(); }
 
@@ -904,14 +647,6 @@ document.getElementById('gc_export').addEventListener('click', function(){
   renderCurrentStyle();
   const url = canvas.toDataURL('image/png');
   const a = document.createElement('a'); a.href = url; a.download = 'graha_chakra.png'; a.click();
-});
-
-document.getElementById('panchangam_export').addEventListener('click', function(){
-  const panchang = document.getElementById('panchangam');
-  // ensure latest render
-  searchData();
-  const url = panchang.toDataURL('image/png');
-  const a = document.createElement('a'); a.href = url; a.download = 'panchangam.png'; a.click();
 });
 
 /* hide chart */
