@@ -113,6 +113,17 @@ document.addEventListener("DOMContentLoaded", function () {
     <a href="index.html">चक्र सहित</a>
     <a href="GovindJiStyle.html">साधारण</a>
   </div></div>
+
+
+  <div class="dropdown">
+  <a href="#" class="dropbtn">सन्ध्यावन्दन▾</a>
+  <div class="dropdown-content">
+    <a href="pranayaam.html">प्राणायाम</a>
+    <a href="ySandhya.html">यजुर्वेदीसंध्या</a>
+    <a href="sSandhya.html">सामवेदीसंध्या</a>
+  </div></div>
+
+
   <div class="dropdown">
   <a href="#" class="dropbtn">ग्रहशान्ति▾</a>
   <div class="dropdown-content">

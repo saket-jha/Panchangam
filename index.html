@@ -64,7 +64,7 @@
   <p>॥श्रीसूर्यसिद्धान्तीय 🌞 पञ्चाङ्ग॥</p>  
   <p><span id="nDinaank" class="heading">दिनांक: </span><span id="dinaank" class="value"></span> ई०</p>
   <p><span id="nVSamvat" class="heading">विक्रम सम्वत: </span> <span id="vSamvat" class="value" ></span></p>
-  <p><span id="nSSamvat" class="heading">शक सम्वत: </span> १९४७</p>
+  <p><span id="nSSamvat" class="heading">शक सम्वत: </span><span id="sSamvat" class="value"></span></p>
   <p><span id="nRitu" class="heading">ऋतु: </span><span id="ritu" class="value" ></span></p>
   <p><span id="nMaasPaksha" class="heading">मास व पक्ष: </span><span id="maas"  class="value"></span>&nbsp;<span id="paksha"  class="value"></span></p>
   <p><span id="nDin" class="heading">वार: </span><span id="din" class="value"></span></p>
@@ -309,7 +309,7 @@ function searchData(){
   document.getElementById('panchangam').style.display = 'block';
   document.getElementById('result').style.display = 'none';
  // renderCurrentStyle();
- // document.getElementById("dinaank").innerText = selDate;
+  document.getElementById("dinaank").innerText = selectedDate;
   document.getElementById("maas").innerText = window.col1 || "";
   document.getElementById("din").innerText = window.col2 || "";
   document.getElementById("tithi").innerText = window.col3 || "";
@@ -486,7 +486,7 @@ if (d < newYearBoundary) {
 }
 
 document.getElementById("vSamvat").innerText = vsYear + ' "' + vsName + '" ';
-//document.getElementById("SSamvat").innerText = (year - 789);
+document.getElementById("sSamvat").innerText = vsYear*1-135;
 document.getElementById("gc_container").style.display = "none";
 
 
