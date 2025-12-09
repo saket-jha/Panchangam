@@ -16,3 +16,10 @@
     color: #007bff;
     font-size: larger;
 }
+
+.h2 .heading {
+    font-weight: bolder;
+    text-align: center;
+    color: #007bff;
+    font-size: xx-large;
+}
