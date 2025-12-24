@@ -1,0 +1,30 @@
+@font-face {
+    font-family: 'mAprajita';
+    src: url('../fonts/Aparajita.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+} 
+@font-face {
+    font-family: 'mAkshar';
+    src: url('../fonts/Akshar.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'mKishore';
+    src: url('../fonts/GIST-DVOTKishor.TTF') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'mSanskrit2003';
+    src: url('../fonts/Sanskrit2003.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'mSanskritText';
+    src: url('../fonts/Sanskrit_text.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}

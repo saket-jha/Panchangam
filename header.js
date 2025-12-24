@@ -28,6 +28,8 @@ document.addEventListener("DOMContentLoaded", function () {
     color:white;
     text-decoration:none;
     margin-left:15px;
+    font-size:large;
+    font-weight:bold;
   }
   .nav a:hover {color:gold;}
   .menu-toggle {
@@ -113,6 +115,8 @@ document.addEventListener("DOMContentLoaded", function () {
     <a href="index.html">चक्र सहित</a>
     <a href="GovindJiStyle.html">साधारण</a>
   </div></div>
+
+  <a href="Agnivaas.html">अग्निवास</a>
 
 
   <div class="dropdown">
