@@ -174,7 +174,7 @@ function searchData(){
     if(typeof val === "string" && /^\d{1,2}:\d{2}(:\d{2})?$/.test(val.trim())){}
     else if(val !== "" && !isNaN(val)) {
       const num = parseFloat(val);
-      if(num >= 0 && num < 2 && i !== 2) val = excelTimeToHMS(num);
+      if(num >= 0 && num < 2 && i !== 3) val = excelTimeToHMS(num);
     }
     const varName = "col"+i;
     window[varName] = val;
@@ -223,6 +223,8 @@ function searchData(){
   document.getElementById("yog").innerText = yogMap[window.col5];
 
  // day name mapping (if col2 has Sun/Mon etc.)
+ if (window.col3 > 28 || window.col3 === 1 ) {
+
   const karanMap = { "Bava": "बव", "Bälav": "बालव", "Kaulav": "कौलव", "Taitil": "तैतिल", "Gara": "गर", "Vanij": "वणिज", "Višti": "विष्टि *(भद्रा)*", "Shakun": "शकुनि", "Chatuš": "चतुष्पाद", "Näga": "नाग", "Kimstu": "किस्तुघ्न" };
   if(window.col7 && karanMap[window.col7]) 
   document.getElementById("karan").innerText = karanMap[window.col7];
@@ -236,6 +238,25 @@ function searchData(){
 
       document.getElementById("karan2").innerText = karanMap[nextKey];
       document.getElementById("karan3").innerText = karanMap[nextKey1];
+  
+ } else {
+
+  const karanMap = { "Bava": "बव", "Bälav": "बालव", "Kaulav": "कौलव", "Taitil": "तैतिल", "Gara": "गर", "Vanij": "वणिज", "Višti": "विष्टि *(भद्रा)*"};
+  if(window.col7 && karanMap[window.col7]) 
+  document.getElementById("karan").innerText = karanMap[window.col7];
+ // find next karan
+      const keys = Object.keys(karanMap);
+      const currentIndex = keys.indexOf(window.col7);
+      const nextIndex = (currentIndex + 1) % keys.length; // wraps to start if last
+      const nextKey = keys[nextIndex];
+      const nextIndex1 = (currentIndex + 2) % keys.length; // wraps to start if last
+      const nextKey1 = keys[nextIndex1];
+
+      document.getElementById("karan2").innerText = karanMap[nextKey];
+      document.getElementById("karan3").innerText = karanMap[nextKey1];
+  
+ }
+  
     
 
 
@@ -246,7 +267,7 @@ function searchData(){
       1:"प्रतिपदा",2:"द्वितीया",3:"तृतीया",4:"चतुर्थी",5:"पञ्चमी",6:"षष्ठी",7:"सप्तमी",
       8:"अष्टमी",9:"नवमी",10:"दशमी",11:"एकादशी",12:"द्वादशी",13:"त्रयोदशी",14:"चतुर्दशी",15:"पूर्णिमा",
       16:"प्रतिपदा",17:"द्वितीया",18:"तृतीया",19:"चतुर्थी",20:"पञ्चमी",21:"षष्ठी",22:"सप्तमी",
-      23:"अष्टमी",24:"नवमी",25:"दशमी",26:"एकादशी",27:"द्वादशी",28:"त्रयोदशी",29:"चतुर्दशी",30:"पूर्णिमा"
+      23:"अष्टमी",24:"नवमी",25:"दशमी",26:"एकादशी",27:"द्वादशी",28:"त्रयोदशी",29:"चतुर्दशी",30:"अमावस्या"
     };
     document.getElementById("tithi").innerText = tithiNames[t] || window.col3;
     document.getElementById("paksha").innerText = (t <= 15 ? "शुक्लपक्ष" : "कृष्णपक्ष");
