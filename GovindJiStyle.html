@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <script src="header.js"></script>
+<link rel="stylesheet" href="./css/style.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>सूर्यसिद्धान्तीय पञ्चाङ्गम्</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  body{font-size: larger; text-align: center;  font-family:'Noto Sans Devanagari',Arial,sans-serif;background:#f7f9fc;padding:24px;}
+  body{font-size: larger; text-align: center;  font-family:'Noto Sans Devanagari',Arial,sans-serif;background:#f7f9fc;}
   h2{color:#0a66c2}
   label{font-weight:600}
   input,select,button{padding:8px;margin:6px 0;border-radius:6px;border:1px solid #ccc}
@@ -46,7 +47,7 @@
 </select><br>
 <button onclick="loadFile()">पुष्टि करें</button>
 
-<div id="dateSection" style="display:none;margin-top:12px">
+<div id="dateSection" style="display:none;">
   <label>दिनांक चुनें:</label><br>
   <input type="date" id="datePicker" /> <button onclick="searchData()">पञ्चाङ्ग</button>
 </div>
@@ -57,28 +58,30 @@
 
 <div id="govindji" style="background:#fff;padding:14px;border-radius:8px; display: none;" >
   <p>॥ॐ श्रीगणेशाय नम:॥</p>
-  <p>॥श्रीसूर्यसिद्धान्तीय 🌞 काशीस्थ पञ्चाङ्ग॥</p>
-  <p>* विक्रम सम्वत - २०८२ "सिद्धार्थ नामक संवत्सर"</p>
-  <p>* शक सम्वत - १९४७</p>
+  <p>*॥श्रीसूर्यसिद्धान्तीय 🌞 काशीस्थ पञ्चाङ्ग॥*</p>
+  <p>* विक्रम सम्वत - २०८२ "सिद्धार्थ नामक संवत्सर" <br>
+     * शक सम्वत - १९४७</p>
   <p>* ऋतु - शरद</p>
   <p>* मास व पक्ष – <span id="maas"></span>&nbsp;<span id="paksha"></span></p>
   <p>*वार* - *<span id="din"></span>*</p>
-  <p>*तिथि* - *<span id="tithi"></span>* (<span id="tithyant"></span> बजे तक)</p>
-  <p>*नक्षत्र* - *<span id="nakshatra"></span>* (<span id="nakshatraant"></span> बजे तक)</p>
+  <p>*तिथि* - *<span id="tithi"></span>* (<span id="tithyant"></span> बजे तक)<br>
+     *नक्षत्र* - *<span id="nakshatra"></span>* (<span id="nakshatraant"></span> बजे तक)<br>
 
   <!-- Rashi spans remain in HTML but are NOT set by this script -->
-  <p> <span id="rashi"></span>&nbsp;<span id="rashyant"></span> <span id="rashi2"></span></span>)</p>
+  * <span id="rashi"></span>&nbsp;<span id="rashyant"></span> <span id="rashi2"></span></span>)</p>
 
-  <p>*करण १* - <span id="karan"></span> (<span id="karanant1"></span> बजे तक)</p>
-  <p>*करण २*- <span id="karan2"></span> (<span id="karanant2"></span> बजे तक)</p>
-  <p>*करण ३* - <span id="karan3"></span> (सूर्योदयपर्यन्त)</p>
+  <p>*करण १* - <span id="karan"></span> (<span id="karanant1"></span> बजे तक)<br>
+    *करण २*- <span id="karan2"></span> (<span id="karanant2"></span> बजे तक)<br>
+    *करण ३* - <span id="karan3"></span> (सूर्योदयपर्यन्त)</p>
 
   <p>*योग* - *<span id="yog"></span>* (<span id="yogant"></span> बजे तक)</p>
-  <p>* सूर्योदय - <span id="suryodaya"></span> बजे</p>
-  <p>* सूर्यास्त - <span id="suryast"></span> बजे</p>
+  <p>* सूर्योदय - <span id="suryodaya"></span> बजे<br>
+    * सूर्यास्त - <span id="suryast"></span> बजे</p>
   <p>* दिशाशूल - <span id="dikshool"></span></p>
   <p>ख्रिष्टीय वर्षानुसार दिनांक *<span id="dinaank"></span>* ई०</p>
-  <p>॥तन्मेमनः शिवसङ्कल्पमस्तु॥</p>
+  <p>॥तन्मेमनः शिवसङ्कल्पमस्तु॥<br>
+  *********************************<br>
+(कृपया समय २४ घण्टे के प्रारूप में पढ़ें, पञ्चाङ्ग में कालगणना सूर्योदय के पश्चात होती है।)</p>
 </div>
 
 <script>
@@ -174,7 +177,7 @@ function searchData(){
     if(typeof val === "string" && /^\d{1,2}:\d{2}(:\d{2})?$/.test(val.trim())){}
     else if(val !== "" && !isNaN(val)) {
       const num = parseFloat(val);
-      if(num >= 0 && num < 2 && i !== 3) val = excelTimeToHMS(num);
+      if(num >= 0 && num < 2 && i !== 3 ) val = excelTimeToHMS(num);
     }
     const varName = "col"+i;
     window[varName] = val;
