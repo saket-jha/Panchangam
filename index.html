@@ -349,12 +349,12 @@ function searchData(){
   document.getElementById("yog").innerText = yogMap[window.col5];
 
  // day name mapping (if col2 has Sun/Mon etc.)
-  const karanMap = { "Bava": "बव", "Bälav": "बालव", "Kaulav": "कौलव", "Taitil": "तैतिल", "Gara": "गर", "Vanij": "वणिज", "Višti": "विष्टि (भद्रा)" };
-  // , "Shakun": "शकुनि", "Chatuš": "चतुष्पाद", "Näga": "नाग", "Kimstu": "किस्तुघ्न"
+  if (window.col3 > 28 || window.col3 === 1 ) {
+
+  const karanMap = { "Bava": "बव", "Bälav": "बालव", "Kaulav": "कौलव", "Taitil": "तैतिल", "Gara": "गर", "Vanij": "वणिज", "Višti": "विष्टि *(भद्रा)*", "Shakun": "शकुनि", "Chatuš": "चतुष्पाद", "Näga": "नाग", "Kimstu": "किस्तुघ्न" };
   if(window.col7 && karanMap[window.col7]) 
   document.getElementById("karan").innerText = karanMap[window.col7];
  // find next karan
- 
       const keys = Object.keys(karanMap);
       const currentIndex = keys.indexOf(window.col7);
       const nextIndex = (currentIndex + 1) % keys.length; // wraps to start if last
@@ -364,6 +364,25 @@ function searchData(){
 
       document.getElementById("karan2").innerText = karanMap[nextKey];
       document.getElementById("karan3").innerText = karanMap[nextKey1];
+  
+ } else {
+
+  const karanMap = { "Bava": "बव", "Bälav": "बालव", "Kaulav": "कौलव", "Taitil": "तैतिल", "Gara": "गर", "Vanij": "वणिज", "Višti": "विष्टि *(भद्रा)*"};
+  if(window.col7 && karanMap[window.col7]) 
+  document.getElementById("karan").innerText = karanMap[window.col7];
+ // find next karan
+      const keys = Object.keys(karanMap);
+      const currentIndex = keys.indexOf(window.col7);
+      const nextIndex = (currentIndex + 1) % keys.length; // wraps to start if last
+      const nextKey = keys[nextIndex];
+      const nextIndex1 = (currentIndex + 2) % keys.length; // wraps to start if last
+      const nextKey1 = keys[nextIndex1];
+
+      document.getElementById("karan2").innerText = karanMap[nextKey];
+      document.getElementById("karan3").innerText = karanMap[nextKey1];
+  
+ }
+  
     
 
 
