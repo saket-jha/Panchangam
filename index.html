@@ -52,7 +52,7 @@
   <label style="font-size: larger;">आङ्ग्ल दिनाङ्क चुनें</label><br>
   <input type="date" style="font-size: larger;" id="datePicker" /><br><br>
   <button onclick="searchData()" style="font-size: larger;">पञ्चाङ्ग</button>
-  <button onclick="convertDivToTirhuta('panchangam')" style="font-size: larger;">Maithili</button>
+  <button id="maithili" onclick="searchData();convertDivToTirhuta('panchangam')" style="font-size: larger;">मैथिली</button>
   <button onclick="searchData();displayChakra()" style="font-size: larger;">चक्र देखें</button>
 </div>
 
@@ -64,7 +64,7 @@
   <div class="overlay"></div>
   <div class="content">
   <p>॥ॐ श्रीगणेशाय नम:॥</p>
-  <p>॥श्रीसूर्यसिद्धान्तीय 🌞 पञ्चाङ्ग॥</p>  
+  <p>॥श्रीसूर्य-सिद्धान्तीय 🌞 पञ्चाङ्ग॥</p>  
   <p><span id="nDinaank" class="heading">दिनांक: </span><span id="dinaank" class="value"></span> ई०</p>
   <p><span id="nVSamvat" class="heading">विक्रम सम्वत: </span> <span id="vSamvat" class="value" ></span></p>
   <p><span id="nSSamvat" class="heading">शक सम्वत: </span><span id="sSamvat" class="value"></span></p>
@@ -532,8 +532,7 @@ document.getElementById("gc_container").style.display = "none";
   document.getElementById("panchangam").style.display ="block";
   const textToCopy = document.getElementById("panchangam").innerText;
    navigator.clipboard.writeText(textToCopy);
-
-
+  
 }
 
 const devToTirhutaMap = {
@@ -593,6 +592,8 @@ const devToTirhutaMap = {
 "ष":"𑒭",
 "स":"𑒮",
 "ह":"𑒯",
+
+"ॐ":"𑓇",
 
 
 "ा":"𑒰",
