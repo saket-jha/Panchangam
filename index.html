@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <script src="header.js"></script>
 <link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="./css/font.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>श्रीसूर्यसिद्धान्तीय पञ्चाङ्गम् </title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -51,6 +52,7 @@
   <label style="font-size: larger;">आङ्ग्ल दिनाङ्क चुनें</label><br>
   <input type="date" style="font-size: larger;" id="datePicker" /><br><br>
   <button onclick="searchData()" style="font-size: larger;">पञ्चाङ्ग</button>
+  <button onclick="convertDivToTirhuta('panchangam')" style="font-size: larger;">Maithili</button>
   <button onclick="searchData();displayChakra()" style="font-size: larger;">चक्र देखें</button>
 </div>
 
@@ -533,6 +535,121 @@ document.getElementById("gc_container").style.display = "none";
 
 
 }
+
+const devToTirhutaMap = {
+"अ":"𑒁",
+"आ":"𑒂",
+"इ":"𑒃",
+"ई":"𑒄",
+"उ":"𑒅",
+"ऊ":"𑒆",
+
+"ऋ":"𑒇",
+"ॠ":"𑒈",
+"ऌ":"𑒉",
+"ॡ":"𑒊",
+"ए":"𑒋",
+"ऐ":"𑒌",
+"ओ":"𑒍",
+"औ":"𑒎",
+
+
+"क":"𑒏",
+"ख":"𑒐",
+"ग":"𑒑",
+"घ":"𑒒",
+"ङ":"𑒓",
+
+"च":"𑒔",
+"छ":"𑒕",
+"ज":"𑒖",
+"झ":"𑒗",
+"ञ":"𑒘",
+
+"ट":"𑒙",
+"ठ":"𑒚",
+"ड":"𑒛",
+"ढ":"𑒜",
+"ण":"𑒝",
+
+"त":"𑒞",
+"थ":"𑒟",
+"द":"𑒠",
+"ध":"𑒡",
+"न":"𑒢",
+
+"प":"𑒣",
+"फ":"𑒤",
+"ब":"𑒥",
+"भ":"𑒦",
+"म":"𑒧",
+
+"य":"𑒨",
+"र":"𑒩",
+"ल":"𑒪",
+"व":"𑒫",
+
+"श":"𑒬",
+"ष":"𑒭",
+"स":"𑒮",
+"ह":"𑒯",
+
+
+"ा":"𑒰",
+"ि":"𑒱",
+"ी":"𑒲",
+"ु":"𑒳",
+"ू":"𑒴",
+"ं":"𑓀",
+"ं":"𑓀",
+"ृ":"𑒵",
+"े":"𑒹",
+"ै":"𑒻",
+"ो":"𑒽",
+"ौ":"𑒾",
+"ः":"𑓁",
+"़":"𑓃",
+"्":"𑓂",
+  // virama (approx)
+
+"०":"𑓐",
+"१":"𑓑",
+"२":"𑓒",
+"३":"𑓓",
+"४":"𑓔",
+"५":"𑓕",
+"६":"𑓖",
+"७":"𑓗",
+"८":"𑓘",
+"९":"𑓙",
+
+
+"।":"।",
+"॥":"॥"
+
+
+};
+
+function devToTirhutaText(text) {
+  return text.split("").map(ch => devToTirhutaMap[ch] || ch).join("");
+}
+
+function convertDivToTirhuta(panchangam) {
+  const root = document.getElementById(panchangam);
+  if (!root) return;
+
+  function walk(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      node.textContent = devToTirhutaText(node.textContent);
+    } else {
+      node.childNodes.forEach(walk);
+    }
+  }
+
+  walk(root);
+}
+
+
 
 function copyDivText() {
        // Get the div element by its ID

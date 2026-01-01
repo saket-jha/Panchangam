@@ -1,0 +1,114 @@
+<html><head>
+<style>
+@font-face {
+  font-family: "MithilaUni";
+  src: url('./res/font/MithilaUni.ttf') format('truetype');  
+}
+
+textarea {
+font-family: inherit;
+font-size: inherit;
+width: 97%;
+min-height:50%;
+border-width:5px;
+border-color: coral;
+}
+
+#input_text {
+font-family: "MithilaUni";
+font-size: 20pt;
+}
+#output_text {
+font-family: "MithilaUni";
+font-size: 25pt;
+}
+
+</style>
+<script>
+var n1 = "";
+var n2 = 0;
+var n3 = "";
+var s = "\ \u0901\u0902\u0903\u0905\u0906\u0907\u0908\u0909\u090A\u090B\u090C\u090F\u0910\u0913\u0914\u0915\u0916\u0917\u0918\u0919\u091A\u091B\u091C\u091D\u091E\u091F\u0920\u0921\u0922\u0923\u0924\u0925\u0926\u0927\u0928\u092A\u092B\u092C\u092D\u092E\u092F\u0930\u0932\u0935\u0936\u0937\u0938\u0939\u093C\u093D\u093E\u093F\u0940\u0941\u0942\u0943\u0944\u0946\u0947\u0948\u094A\u094B\u094C\u094D\u0950\u0960\u0961\u0962\u0963\u0966\u0967\u0968\u0969\u096A\u096B\u096C\u096D\u096E\u096F\u0970\u0971\u0030\u0031\u0032\u0033\u0034\u0035\u0036\u0037\u0038\u0039\u0949\u0958\u0959\u095A\u095B\u095C\u095D\u095E\u095F\u0945";
+var c=new Array("\ ","\uD805\uDCBF","\uD805\uDCC0","\uD805\uDCC1","\uD805\uDC81","\uD805\uDC82","\uD805\uDC83","\uD805\uDC84","\uD805\uDC85","\uD805\uDC86","\uD805\uDC87","\uD805\uDC89","\uD805\uDC8B","\uD805\uDC8C","\uD805\uDC8D","\uD805\uDC8E","\uD805\uDC8F","\uD805\uDC90","\uD805\uDC91","\uD805\uDC92","\uD805\uDC93","\uD805\uDC94","\uD805\uDC95","\uD805\uDC96","\uD805\uDC97","\uD805\uDC98","\uD805\uDC99","\uD805\uDC9A","\uD805\uDC9B","\uD805\uDC9C","\uD805\uDC9D","\uD805\uDC9E","\uD805\uDC9F","\uD805\uDCA0","\uD805\uDCA1","\uD805\uDCA2","\uD805\uDCA3","\uD805\uDCA4","\uD805\uDCA5","\uD805\uDCA6","\uD805\uDCA7","\uD805\uDCA8","\uD805\uDCA9","\uD805\uDCAA","\uD805\uDCAB","\uD805\uDCAC","\uD805\uDCAD","\uD805\uDCAE","\uD805\uDCAF","\uD805\uDCC3","\uD805\uDCC4","\uD805\uDCB0","\uD805\uDCB1","\uD805\uDCB2","\uD805\uDCB3","\uD805\uDCB4","\uD805\uDCB5","\uD805\uDCB6","\uD805\uDCBA","\uD805\uDCB9","\uD805\uDCBB","\uD805\uDCBD","\uD805\uDCBC","\uD805\uDCBE","\uD805\uDCC2","\uD805\uDCC7","\uD805\uDC88","\uD805\uDC8A","\uD805\uDCB7","\uD805\uDCB8","\uD805\uDCD0","\uD805\uDCD1","\uD805\uDCD2","\uD805\uDCD3","\uD805\uDCD4","\uD805\uDCD5","\uD805\uDCD6","\uD805\uDCD7","\uD805\uDCD8","\uD805\uDCD9","\uD805\uDCC6","\uD805\uDCC3","\uD805\uDCD0","\uD805\uDCD1","\uD805\uDCD2","\uD805\uDCD3","\uD805\uDCD4","\uD805\uDCD5","\uD805\uDCD6","\uD805\uDCD7","\uD805\uDCD8","\uD805\uDCD9","\uDBFF\uDC29","\uD805\uDC8F\uD805\uDCC3","\uD805\uDC90\uD805\uDCC3","\uD805\uDC91\uD805\uDCC3","\uD805\uDC96\uD805\uDCC3","\uD805\uDC9B\uD805\uDCC3","\uD805\uDC9C\uD805\uDCC3","\uD805\uDCA4\uD805\uDCC3","\uD805\uDCA8\uD805\uDCC3","\uDBFF\uDC1F");
+function upd()
+{
+n3="";
+text1= document.forms[0].input_text.value;
+  for (i=0; i<text1.length; i++)
+    {
+n1 = text1.charAt(i); 
+n2 = s.indexOf(n1);
+if (n2 != -1) { n3 = n3+c[n2];}
+else { n3 = n3+n1;}
+
+    }
+// य का स्वरूप	
+if (document.forms[0].ya.value =="1"){
+  n3 = n3.replace(/\uD805\uDCA8/g, "\uD805\uDCA8\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+  n3 = n3.replace(/\uD805\uDCC3\uD805\uDCC3/g, "\uD805\uDCC3"); 
+}
+
+document.forms[0].input_text.value = n3;
+}
+
+function copy() {
+  let textarea = document.getElementById("input_text");
+  textarea.select();
+  document.execCommand("copy");
+}
+
+alert("इस पन्ने में आचार्य श्री विनय झा जी द्वारा निर्मित MithilaUni.ttf फाॅण्ट का प्रयोग किया गया है, जिसका डाउनलोड लिंक इसी पन्ने के नीचे दिया गया है।");
+
+</script>
+</head>
+<body>
+<form>
+<center>
+ <h1 style= "color:red; font-family: MithilaUni;">𑒧𑒱𑒟𑒱𑒪𑒰𑒏𑓂𑒭𑒩 𑒙𑒓𑓂𑒏𑒝</h1>
+ </center>
+ 
+ 
+<!--<p> य का कौन सा स्वरूप रखना चाहते हैं : -->
+<input type="radio" name="ya" value="1">&nbsp; 
+<input type="radio" name="ya" value="0"><p> 
+<center>
+  <p><textarea name="input_text" id = "input_text" placeholder="𑒃𑒮 𑒥𑒰𑒏𑓂𑒮 𑒧𑒹𑓀 𑒠𑒹𑒫𑒢𑒰𑒑𑒩𑒲 𑒧𑒹𑓀 𑒙𑒰𑒄𑒣 𑒏𑒩𑒹𑓀 𑒁𑒟𑒫𑒰 𑒠𑒹𑒫𑒢𑒰𑒑𑒩𑒲 𑒪𑒱𑒐𑒰 𑒯𑒳𑒂 𑒣𑒹𑒮𑓂𑒙 𑒏𑒩𑒹𑓀 ( इस बाॅक्स में देवनागरी में टाईप करें अथवा देवनागरी लिखा हुआ पेस्ट करें....)" ondblclick= "upd()" onpointermove= "upd()" onpointerenter= "upd()" onplaying = "upd()" onkeypress = "upd()"  ></textarea></p>
+</center>
+</form>
+
+
+<p id="demo"></p>
+<button id="copy" style="display: block; font-size: xx-large; font-weight: bolder;" onclick="copy()" >Copy</button> <br>
+
+
+<a style="display: block; font-size: xx-large; font-weight: bolder;" href="http://vedicastrology.wdfiles.com/local--files/mithilakshara-font/MithilaUni.ttf" > Download MithilaUni.ttf </a>
+<a style="display: block; font-size: xx-large; font-weight: bolder;" href="http://vedicastrology.wikidot.com/mithilakshara-font" > Go to Website </a>
+ 
+
+
+<script>
+  function copy() {
+  let textarea = document.getElementById("input_text");
+  textarea.select();
+  document.execCommand("copy");
+}
+
+</script>
+
+</body>
+</html>
