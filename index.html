@@ -635,9 +635,13 @@ function devToTirhutaText(text) {
   return text.split("").map(ch => devToTirhutaMap[ch] || ch).join("");
 }
 
+
+
 function convertDivToTirhuta(panchangam) {
   const root = document.getElementById(panchangam);
   if (!root) return;
+
+
 
   function walk(node) {
     if (node.nodeType === Node.TEXT_NODE) {

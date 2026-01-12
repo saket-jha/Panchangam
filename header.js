@@ -132,15 +132,15 @@ document.addEventListener("DOMContentLoaded", function () {
   <a href="#" class="dropbtn">ग्रहशान्ति▾</a>
   <div class="dropdown-content">
     <a href="GenRule.html">सामान्य नियम</a>
-    <a href="SuryaShanti.html">सूर्यशान्ति</a>
-    <a href="ChandraShanti.html">चन्द्रशान्ति</a>
-    <a href="MangalShanti.html">मङ्गलशान्ति</a>
-    <a href="BudhaShanti.html">बुधशान्ति</a>
-    <a href="GuruShanti.html">बृहस्पतिशान्ति</a>
-    <a href="ShukraShanti.html">शुक्रशान्ति</a>
-    <a href="ShaniShanti.html">शनिशान्ति</a>
-    <a href="RahuShanti.html">राहुशान्ति</a>
-    <a href="KetuShanti.html">केतुशान्ति</a>
+    <a href="01surya.html">सूर्यशान्ति</a>
+    <a href="02chandra.html">चन्द्रशान्ति</a>
+    <a href="03mangal.html">मङ्गलशान्ति</a>
+    <a href="04budha.html">बुधशान्ति</a>
+    <a href="05guru.html">बृहस्पतिशान्ति</a>
+    <a href="06shukra.html">शुक्रशान्ति</a>
+    <a href="07shani.html">शनिशान्ति</a>
+    <a href="08rahu.html">राहुशान्ति</a>
+    <a href="09ketu.html">केतुशान्ति</a>
   </div></div>
       <a href="vividh.html">विविध-अनुष्ठान</a>
     </nav>

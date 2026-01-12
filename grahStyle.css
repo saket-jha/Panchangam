@@ -1,0 +1,42 @@
+
+body{
+    font-family:"Noto Serif Devanagari","Mangal",serif;
+    background:#fffaf3;
+    color:#2b2b2b;
+    line-height:1.9;
+    padding:40px;
+}
+.chapter{
+    max-width:900px;
+    margin:auto;
+    background:#ffffff;
+    padding:40px;
+    border:2px solid #e6d3a3;
+    box-shadow:0 0 12px rgba(0,0,0,0.08);
+}
+h1{
+    text-align:center;
+    color:#8b0000;
+    border-bottom:3px double #caa24d;
+    padding-bottom:12px;
+    margin-bottom:30px;
+}
+h2{
+    color:#5a2e00;
+    margin-top:30px;
+    border-left:6px solid #caa24d;
+    padding-left:10px;
+}
+.mantra{
+    background:#fff7e6;
+    border:1px solid #e0cfa0;
+    padding:15px;
+    margin:15px 0;
+    text-align:center;
+}
+.divider{
+    text-align:center;
+    margin:35px 0;
+    font-size:20px;
+    color:#caa24d;
+}
